@@ -10,6 +10,7 @@ import {
     PRIMITIVES_TYPE,
     COMBINE_PRIMITIVES_NODE_CLASS,
     PRIMITIVE_SLOT_TYPE,
+    MISC_PRIMITIVE_SLOT_TYPES_KEY,
     SPLIT_PRIMITIVES_NODE_CLASS,
     addPrimitiveInputs,
     debounce,
@@ -83,14 +84,17 @@ function setupCombinePrimitives(nodeType) {
             if (!PRIMITIVE_NAME_RE.test(input.name ?? "")) {
                 continue;
             }
-            const resolvedType = resolvePrimitiveSlotType(this, i, input);
-            input.type = resolvedType;
+            // ソケットは汎用型のまま（先に接続した INT 等で固定され他型が刺さらなくなるのを防ぐ）
+            input.type = PRIMITIVE_SLOT_TYPE;
             if (input.link) {
+                const resolvedType = resolvePrimitiveSlotType(this, i, input);
                 storedSlots.push({ name: input.name, type: resolvedType });
             }
         }
         if (storedSlots.length > 0) {
             storePrimitiveSlotTypes(this, storedSlots);
+        } else if (this.properties?.[MISC_PRIMITIVE_SLOT_TYPES_KEY] != null) {
+            delete this.properties[MISC_PRIMITIVE_SLOT_TYPES_KEY];
         }
 
         const combinedOut = this.outputs.find((o) => o.name === "combined");

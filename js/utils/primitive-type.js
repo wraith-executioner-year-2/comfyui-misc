@@ -126,18 +126,32 @@ export function reconcilePrimitiveSlotType(existing, resolved) {
     return resolved;
 }
 
+/**
+ * 接続・保存・スロット型から実効プリミティブ型を決める（接続を最優先）。
+ * Combine の入力ソケットは別途 PRIMITIVE_SLOT_TYPE のままにし、保存/Split 同期に使う。
+ *
+ * @param {{ connectionType?: string|Array, storedType?: string|Array, slotType?: string|Array }} params
+ */
+export function pickResolvedPrimitiveSlotType({ connectionType, storedType, slotType }) {
+    if (isConcretePrimitiveSlotType(connectionType)) {
+        return connectionType;
+    }
+    if (isConcretePrimitiveSlotType(storedType)) {
+        return storedType;
+    }
+    if (isConcretePrimitiveSlotType(slotType)) {
+        return slotType;
+    }
+    return PRIMITIVE_SLOT_TYPE;
+}
+
 export function resolvePrimitiveSlotType(node, slotIndex, input) {
     const slot = input ?? node.inputs?.[slotIndex];
     const storedEntry = getStoredPrimitiveSlotTypes(node)?.find((entry) => entry.name === slot?.name);
-    if (storedEntry && isConcretePrimitiveSlotType(storedEntry.type)) {
-        return storedEntry.type;
-    }
-    if (isConcretePrimitiveSlotType(slot?.type)) {
-        return slot.type;
-    }
     const resolved = followConnectionUntilType(node, IoDirection.INPUT, slotIndex, true);
-    if (isConcretePrimitiveSlotType(resolved?.type)) {
-        return resolved.type;
-    }
-    return PRIMITIVE_SLOT_TYPE;
+    return pickResolvedPrimitiveSlotType({
+        connectionType: resolved?.type,
+        storedType: storedEntry?.type,
+        slotType: slot?.type,
+    });
 }

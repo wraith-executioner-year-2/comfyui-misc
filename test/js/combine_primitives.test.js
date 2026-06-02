@@ -1,12 +1,45 @@
 import { describe, expect, it } from "vitest";
 import {
     getStoredPrimitiveSlotTypes,
+    pickResolvedPrimitiveSlotType,
     storePrimitiveSlotTypes,
 } from "../../js/utils/primitive-type.js";
-import { MISC_PRIMITIVE_SLOT_TYPES_KEY } from "../../js/utils/constants.js";
+import { MISC_PRIMITIVE_SLOT_TYPES_KEY, PRIMITIVE_SLOT_TYPE } from "../../js/utils/constants.js";
 import { listLinkedPrimitiveInputs } from "../../js/logic/split-primitives-names.js";
 
 describe("combine_primitives", () => {
+    describe("pickResolvedPrimitiveSlotType", () => {
+        it("接続型が保存済み INT より優先される（primitive_01 を FLOAT に差し替え可能）", () => {
+            expect(
+                pickResolvedPrimitiveSlotType({
+                    connectionType: "FLOAT",
+                    storedType: "INT",
+                    slotType: "INT",
+                }),
+            ).toBe("FLOAT");
+        });
+
+        it("未接続時は保存型をフォールバックに使える", () => {
+            expect(
+                pickResolvedPrimitiveSlotType({
+                    connectionType: null,
+                    storedType: "INT",
+                    slotType: PRIMITIVE_SLOT_TYPE,
+                }),
+            ).toBe("INT");
+        });
+
+        it("接続も保存も無いときは汎用プリミティブ型", () => {
+            expect(
+                pickResolvedPrimitiveSlotType({
+                    connectionType: null,
+                    storedType: null,
+                    slotType: PRIMITIVE_SLOT_TYPE,
+                }),
+            ).toBe(PRIMITIVE_SLOT_TYPE);
+        });
+    });
+
     describe("storePrimitiveSlotTypes / getStoredPrimitiveSlotTypes", () => {
         it("INT と FLOAT を JSON 保存して復元できる（Split 同期の元データ）", () => {
             const combineNode = { properties: {} };
