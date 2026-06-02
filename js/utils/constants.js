@@ -16,7 +16,20 @@ const GENERIC_PRIMITIVE_UNIONS = new Set([
 
 export const PRIMITIVE_TYPE_NAMES = new Set(["INT", "FLOAT", "STRING", "BOOLEAN", "COMBO", "BOOL"]);
 
-export const PRIMITIVES_TYPE = "combined";
+/** Combine ``combined`` 出力 / Split ``combined`` 入力のリンク型（Python ``CombinedPrimitivesType`` と一致） */
+export const PRIMITIVES_TYPE = "PRIMITIVES";
+
+/** 旧ワークフロー・誤設定時の互換エイリアス */
+export const PRIMITIVES_TYPE_ALIASES = new Set([
+    PRIMITIVES_TYPE,
+    "combined",
+    "COMBINED_PRIMITIVES",
+]);
+
+export function isPrimitivesLinkType(type) {
+    return type != null && PRIMITIVES_TYPE_ALIASES.has(String(type));
+}
+
 /** @deprecated PRIMITIVES_TYPE を使用 */
 export const COMBINED_PRIMITIVES_TYPE = PRIMITIVES_TYPE;
 

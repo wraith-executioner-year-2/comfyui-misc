@@ -1,7 +1,7 @@
 import { app } from "../../../scripts/app.js";
 import {
     COMBINE_PRIMITIVES_NODE_CLASS,
-    PRIMITIVES_TYPE,
+    isPrimitivesLinkType,
     PRIMITIVE_SLOT_TYPE,
     SPLIT_PRIMITIVES_NODE_CLASS,
     isRelayNodeClass,
@@ -35,8 +35,7 @@ export function isPrimitiveRelayNode(node) {
         (slot) =>
             !slot.type ||
             slot.type === "*" ||
-            slot.type === PRIMITIVES_TYPE ||
-            slot.type === "COMBINED_PRIMITIVES" ||
+            isPrimitivesLinkType(slot.type) ||
             slot.type === PRIMITIVE_SLOT_TYPE,
     );
 }

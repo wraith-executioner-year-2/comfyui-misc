@@ -374,8 +374,8 @@ app.registerExtension({
 
         nodeData.input = nodeData.input ?? {};
         nodeData.input.required = {
-            combined: [PRIMITIVES_TYPE],
             ...(nodeData.input.required ?? {}),
+            combined: [PRIMITIVES_TYPE],
         };
 
         nodeData.output = [PRIMITIVE_SLOT_TYPE, "INT"];

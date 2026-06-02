@@ -61,7 +61,7 @@ class PrimitiveInputType(str):
 class CombinedPrimitivesType(str):
     """Combine → Split 専用 combined 型（表示名 PRIMITIVES）。"""
 
-    _LEGACY_ALIASES = frozenset({"COMBINED_PRIMITIVES"})
+    _LEGACY_ALIASES = frozenset({"COMBINED_PRIMITIVES", "combined"})
 
     def __ne__(self, __value: object) -> bool:
         if isinstance(__value, str) and (__value == str(self) or __value in self._LEGACY_ALIASES):

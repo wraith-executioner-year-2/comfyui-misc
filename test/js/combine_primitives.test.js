@@ -4,10 +4,26 @@ import {
     pickResolvedPrimitiveSlotType,
     storePrimitiveSlotTypes,
 } from "../../js/utils/primitive-type.js";
-import { MISC_PRIMITIVE_SLOT_TYPES_KEY, PRIMITIVE_SLOT_TYPE } from "../../js/utils/constants.js";
+import {
+    MISC_PRIMITIVE_SLOT_TYPES_KEY,
+    PRIMITIVE_SLOT_TYPE,
+    PRIMITIVES_TYPE,
+    isPrimitivesLinkType,
+} from "../../js/utils/constants.js";
 import { listLinkedPrimitiveInputs } from "../../js/logic/split-primitives-names.js";
 
 describe("combine_primitives", () => {
+    describe("PRIMITIVES_TYPE（ノード検索の型フィルタ）", () => {
+        it("Python CombinedPrimitivesType と同じ PRIMITIVES", () => {
+            expect(PRIMITIVES_TYPE).toBe("PRIMITIVES");
+        });
+
+        it("旧 combined エイリアスもリンク型として互換", () => {
+            expect(isPrimitivesLinkType("combined")).toBe(true);
+            expect(isPrimitivesLinkType("PRIMITIVES")).toBe(true);
+        });
+    });
+
     describe("pickResolvedPrimitiveSlotType", () => {
         it("接続型が保存済み INT より優先される（primitive_01 を FLOAT に差し替え可能）", () => {
             expect(
