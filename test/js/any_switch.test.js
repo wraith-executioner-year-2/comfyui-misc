@@ -1,9 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { computeSelectIndexMax } from "../../js/logic/select-index-bounds.js";
+import { miscSlotTypesConnect } from "../../js/logic/litegraph-type-compat.js";
 import { countAnySwitchInputs, SELECT_INDEX_KEY } from "../../js/utils/select-index.js";
 import { syncSelectIndexWidget } from "../../js/utils/select-index.js";
+import { PRIMITIVES_TYPE } from "../../js/utils/constants.js";
 
 describe("any_switch", () => {
+    describe("miscSlotTypesConnect", () => {
+        it("Combine combined (PRIMITIVES) を any_01 (*) に接続可能", () => {
+            expect(miscSlotTypesConnect(PRIMITIVES_TYPE, "*")).toBe(true);
+            expect(miscSlotTypesConnect("*", PRIMITIVES_TYPE)).toBe(true);
+        });
+    });
+
     describe("select_index 上限", () => {
         it("any_* が3本（+空スロット想定）のとき max は 1", () => {
             expect(computeSelectIndexMax(3)).toBe(1);

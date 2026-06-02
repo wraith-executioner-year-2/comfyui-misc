@@ -64,7 +64,11 @@ class CombinedPrimitivesType(str):
     _LEGACY_ALIASES = frozenset({"COMBINED_PRIMITIVES", "combined"})
 
     def __ne__(self, __value: object) -> bool:
-        if isinstance(__value, str) and (__value == str(self) or __value in self._LEGACY_ALIASES):
+        if __value == any_type or isinstance(__value, AnyType):
+            return False
+        if isinstance(__value, str) and (
+            __value == str(self) or __value in self._LEGACY_ALIASES or __value == "*"
+        ):
             return False
         return True
 

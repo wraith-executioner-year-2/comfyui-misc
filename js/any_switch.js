@@ -19,6 +19,10 @@ import {
     removeUnusedInputsFromEnd,
     syncSelectIndexWidget,
 } from "./utils.js";
+import {
+    moveSelectIndexInputToEnd,
+    rerouteNonIntLinkFromSelectIndex,
+} from "./utils/any-switch-input-order.js";
 
 /** Python の get_name("Any Switch") と同じ文字列 */
 const NODE_CLASS = "Any Switch (misc)";
@@ -74,12 +78,25 @@ function setupMiscAnySwitch(nodeType) {
         if (!this.inputs.some((inp) => inp.name?.startsWith("any_"))) {
             this.addAnyInput(MIN_ANY_INPUTS);
         }
+        moveSelectIndexInputToEnd(this);
+        // 検索からの自動接続直後に型を揃える（debounce 前に PRIMITIVES 等を反映）
+        this.stabilize();
         return result;
     };
 
     /** 配線が変わったら、少し待ってから stabilize でスロット整理 */
     nodeType.prototype.onConnectionsChange = function (type, slotIndex, isConnected, linkInfo, ioSlot) {
         onConnectionsChange?.call(this, type, slotIndex, isConnected, linkInfo, ioSlot);
+
+        if (
+            type === IoDirection.INPUT &&
+            isConnected &&
+            (ioSlot?.name === SELECT_INDEX_KEY || this.inputs[slotIndex]?.name === SELECT_INDEX_KEY)
+        ) {
+            rerouteNonIntLinkFromSelectIndex(this, slotIndex);
+            moveSelectIndexInputToEnd(this);
+        }
+
         this.scheduleStabilize();
     };
 
@@ -117,6 +134,7 @@ function setupMiscAnySwitch(nodeType) {
         // 末尾の未使用 any_* を整理しつつ、最低 1 本の入力は常に残す。
         removeUnusedInputsFromEnd(this, Math.max(1, MIN_ANY_INPUTS - 1), /^any_/);
         this.addAnyInput();
+        moveSelectIndexInputToEnd(this);
 
         let connectedType = null;
         for (let i = 0; i < this.inputs.length; i++) {
@@ -175,12 +193,12 @@ app.registerExtension({
         // object_info の optional が空だと型絞り込み検索に出ないため、* 入力を明示する
         nodeData.input = nodeData.input ?? {};
         nodeData.input.required = {
-            select_index: ["INT", { default: -1, min: -1, max: 4096 }],
             ...(nodeData.input.required ?? {}),
+            select_index: ["INT", { default: -1, min: -1, max: 4096 }],
         };
         nodeData.input.optional = {
-            ...DEFAULT_ANY_INPUTS,
             ...(nodeData.input.optional ?? {}),
+            ...DEFAULT_ANY_INPUTS,
         };
         nodeData.output = ["*", "INT"];
         nodeData.output_name = ["*", "index"];
