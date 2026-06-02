@@ -16,7 +16,7 @@ const GENERIC_PRIMITIVE_UNIONS = new Set([
 
 export const PRIMITIVE_TYPE_NAMES = new Set(["INT", "FLOAT", "STRING", "BOOLEAN", "COMBO", "BOOL"]);
 
-export const PRIMITIVES_TYPE = "PRIMITIVES";
+export const PRIMITIVES_TYPE = "combined";
 /** @deprecated PRIMITIVES_TYPE を使用 */
 export const COMBINED_PRIMITIVES_TYPE = PRIMITIVES_TYPE;
 

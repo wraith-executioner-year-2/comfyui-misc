@@ -6,6 +6,7 @@ import {
     SPLIT_PRIMITIVES_NODE_CLASS,
     isRelayNodeClass,
 } from "./constants.js";
+import { getGraphLink } from "./graph-links.js";
 
 export function getNodeClassName(node) {
     return node?.comfyClass || node?.type || "";
@@ -58,7 +59,7 @@ function walkUpstreamForCombineNode(node, combineNodeClass, visited) {
         if (!input?.link) {
             continue;
         }
-        const link = app.graph.links[input.link];
+        const link = getGraphLink(app.graph, input.link);
         if (!link) {
             continue;
         }
@@ -91,7 +92,7 @@ export function findDownstreamSplitNodes(node, splitNodeClass, visited) {
             continue;
         }
         for (const linkId of output.links) {
-            const link = app.graph.links[linkId];
+            const link = getGraphLink(app.graph, linkId);
             if (!link) {
                 continue;
             }
@@ -113,7 +114,7 @@ export function notifyDownstreamSplitNodes(combineNode, splitNodeClass) {
     const notified = new Set();
 
     for (const linkId of combinedOutput.links) {
-        const link = app.graph.links[linkId];
+        const link = getGraphLink(app.graph, linkId);
         if (!link) {
             continue;
         }
@@ -153,7 +154,7 @@ export function findLinkedCombineNode(splitNode, combineNodeClass) {
     if (!input?.link) {
         return null;
     }
-    const link = app.graph.links[input.link];
+    const link = getGraphLink(app.graph, input.link);
     if (!link) {
         return null;
     }

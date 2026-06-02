@@ -1,5 +1,7 @@
 # comfyui-misc
 
+![](https://files.catbox.moe/vdgpqu.webp)
+
 小さなユーティリティ系ワークフロー向けの ComfyUI カスタムノード集です。
 
 ## ノード一覧
@@ -66,13 +68,14 @@
 - **入力**
   - `combined` (`PRIMITIVES`)
 - **出力**
-  - `primitive_01`, `primitive_02`, ... (`PRIMITIVE`) 動的出力
+  - `INT_01`, `FLOAT_02`, ... (`PRIMITIVE`) 型名付き動的出力
   - `length` (`INT`)
 
 **使い方**
 1. `Combine Primitives (misc)` の `combined` を接続します。
 2. 下流の Primitive 消費ノードを `primitive_*` に接続します。
-3. 出力スロットは上流 Combine の接続状況に合わせて自動同期されます。
+3. 出力スロットは上流 Combine の接続状況に合わせて自動同期されます（`Any Switch (misc)` や `Reroute` など中継ノード越しでも同期）。
+4. ワークフロー読込み/コピー＆ペースト復元時は、まず接続維持を優先し、その後に型同期します。
 
 ## インストール
 

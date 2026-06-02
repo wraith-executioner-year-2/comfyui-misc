@@ -1,5 +1,7 @@
 # comfyui-misc
 
+![](https://files.catbox.moe/vdgpqu.webp)
+
 ComfyUI custom nodes focused on small utility workflows.
 
 ## Nodes
@@ -66,13 +68,14 @@ Unpacks `combined` produced by `Combine Primitives (misc)`.
 - **Input**
   - `combined` (`PRIMITIVES`)
 - **Output**
-  - `primitive_01`, `primitive_02`, ... (`PRIMITIVE`) dynamic outputs
+  - `INT_01`, `FLOAT_02`, ... (`PRIMITIVE`) dynamic outputs (typed names)
   - `length` (`INT`)
 
 **How to use**
 1. Connect `combined` from `Combine Primitives (misc)`.
 2. Connect downstream primitive consumers to `primitive_*` outputs.
-3. Output slots auto-sync with upstream combine connections.
+3. Output slots auto-sync with upstream combine connections (even through relay nodes such as `Any Switch (misc)` and `Reroute`).
+4. On workflow load / copy-paste restore, output links are preserved first and type-specific sync is applied after graph restoration settles.
 
 ## Installation
 

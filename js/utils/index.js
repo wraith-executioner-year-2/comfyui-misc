@@ -6,6 +6,7 @@
  */
 
 export { debounce } from "./debounce.js";
+export { getGraphLink } from "./graph-links.js";
 
 export {
     IoDirection,
@@ -47,12 +48,6 @@ export {
     countPrimitiveDataOutputs,
     ensureLengthOutput,
     addPrimitiveInputs,
-    getConnectedPrimitiveInputs,
-    getSplitDesiredOutputSlots,
-    getExistingPrimitiveOutputSlots,
-    addPrimitiveOutputBeforeLength,
-    disconnectOutputSlot,
-    syncSplitOutputsFromCombine,
 } from "./primitive-slots.js";
 
 export {

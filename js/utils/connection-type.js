@@ -1,5 +1,6 @@
 import { app } from "../../../scripts/app.js";
 import { IoDirection, isGenericPrimitiveUnionType } from "./constants.js";
+import { getGraphLink } from "./graph-links.js";
 
 export function getSlotLinks(inputOrOutput) {
     const links = [];
@@ -8,14 +9,14 @@ export function getSlotLinks(inputOrOutput) {
     }
     if (inputOrOutput.links?.length) {
         for (const linkId of inputOrOutput.links) {
-            const link = app.graph.links[linkId];
+            const link = getGraphLink(app.graph, linkId);
             if (link) {
                 links.push({ id: linkId, link });
             }
         }
     }
     if (inputOrOutput.link) {
-        const link = app.graph.links[inputOrOutput.link];
+        const link = getGraphLink(app.graph, inputOrOutput.link);
         if (link) {
             links.push({ id: inputOrOutput.link, link });
         }

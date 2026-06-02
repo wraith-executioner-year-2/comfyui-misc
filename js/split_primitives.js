@@ -1,8 +1,15 @@
 /**
- * Split Primitives (misc) — フロントエンド拡張
+ * Split Primitives (misc)
  *
- * Combine Primitives の combined のみを入力とし、
- * 接続先 Combine の primitive_* 接続状況に合わせて出力を同期します。
+ * Combine Primitives (misc) の primitive_* 情報を基に、Split 側の
+ * primitive_* 出力（可変）と末尾 length を同期します。
+ *
+ * 設計方針:
+ * - コピー＆ペースト/ワークフロー復元の途中では「一時的な型欠け」や
+ *   「一時的な接続情報欠け」が発生し得るため、同期中に強制的な
+ *   disconnect を行わない。
+ * - 復元直後の短時間は出力の縮小（removeOutput）を抑止し、
+ *   既存の接続スロットが消えないようにする。
  */
 
 import { app } from "../../scripts/app.js";
@@ -12,19 +19,30 @@ import {
     IoDirection,
     PRIMITIVE_SLOT_TYPE,
     SPLIT_PRIMITIVES_NODE_CLASS,
+    LENGTH_OUTPUT_NAME,
     debounce,
     findLinkedCombineNode,
-    countPrimitiveDataOutputs,
-    getSplitDesiredOutputSlots,
     isPrimitiveRelayNode,
     propagatePrimitiveSplitSync,
-    syncSplitOutputsFromCombine,
+    getStoredPrimitiveSlotTypes,
+    resolvePrimitiveSlotType,
+    reconcilePrimitiveSlotType,
 } from "./utils.js";
+
+import { createTrailingOutputHelpers } from "./utils/trailing-output.js";
 
 const NODE_CLASS = SPLIT_PRIMITIVES_NODE_CLASS;
 const COMBINE_NODE_CLASS = COMBINE_PRIMITIVES_NODE_CLASS;
 
 const RELAY_PATCH_KEY = "__miscPrimitiveRelayPatch";
+
+const lengthTrailing = createTrailingOutputHelpers(LENGTH_OUTPUT_NAME);
+const countPrimitiveDataOutputs = lengthTrailing.countDataSlots;
+const ensureLengthOutput = lengthTrailing.ensureMeta;
+const isLengthOutputSlot = lengthTrailing.isMetaSlot;
+
+// ワークフロー読込 / まとめてコピペ後の「リンク復元揺れ」を吸収する猶予
+const RESTORE_WINDOW_MS = 2500;
 
 /**
  * Reroute 等、個別拡張を持たないリレーノードの配線変更を Split へ伝播する。
@@ -56,6 +74,217 @@ function patchRelayNodeConnectionCallbacks() {
     }
 }
 
+function addPrimitiveOutputBeforeLength(node, name, type) {
+    ensureLengthOutput(node);
+    if (isLengthOutputSlot(node)) {
+        const lengthSlot = node.outputs.pop();
+        node.addOutput(name, type);
+        node.outputs.push(lengthSlot);
+    } else {
+        node.addOutput(name, type);
+        ensureLengthOutput(node);
+    }
+}
+
+function typeNameForPrimitiveSlotType(type) {
+    if (Array.isArray(type)) {
+        return "COMBO";
+    }
+    const text = String(type ?? "").trim();
+    if (
+        text === "INT" ||
+        text === "FLOAT" ||
+        text === "STRING" ||
+        text === "BOOLEAN" ||
+        text === "COMBO"
+    ) {
+        return text;
+    }
+    return "PRIMITIVE";
+}
+
+function formatTypedOutputName(type, index0) {
+    const typeName = typeNameForPrimitiveSlotType(type);
+    return `${typeName}_${String(index0 + 1).padStart(2, "0")}`;
+}
+
+function collectExistingOutputSnapshot(splitNode) {
+    const end = countPrimitiveDataOutputs(splitNode);
+    const snapshot = [];
+    for (let i = 0; i < end; i++) {
+        const out = splitNode.outputs?.[i];
+        if (!out?.name) {
+            continue;
+        }
+        snapshot.push({ name: out.name, type: out.type });
+    }
+    return snapshot;
+}
+
+function ensurePrimitiveOutputsCount(splitNode, count, defaultType = PRIMITIVE_SLOT_TYPE) {
+    ensureLengthOutput(splitNode);
+    while (countPrimitiveDataOutputs(splitNode) < count) {
+        const idx = countPrimitiveDataOutputs(splitNode);
+        addPrimitiveOutputBeforeLength(splitNode, `primitive_${String(idx + 1).padStart(2, "0")}`, defaultType);
+    }
+}
+
+function normalizeLengthOutput(splitNode) {
+    const lengthOut = splitNode.outputs[splitNode.outputs.length - 1];
+    if (!lengthOut) {
+        return;
+    }
+    lengthOut.type = "INT";
+    lengthOut.name = LENGTH_OUTPUT_NAME;
+    lengthOut.label = LENGTH_OUTPUT_NAME;
+}
+
+function setGenericPrimitiveOutputs(splitNode) {
+    const end = countPrimitiveDataOutputs(splitNode);
+    for (let i = 0; i < end; i++) {
+        const out = splitNode.outputs[i];
+        if (!out?.name?.includes("_")) {
+            continue;
+        }
+        out.type = PRIMITIVE_SLOT_TYPE;
+        // 仕様③: 復元中でも表示名は INT_01 / FLOAT_02 などの名前を維持する
+        out.label = out.name;
+    }
+}
+
+function applySnapshotPlaceholders(splitNode, snapshot) {
+    if (!snapshot?.length) {
+        return;
+    }
+    // snapshot は data 出力の並びだけを想定（length は含めない）
+    ensurePrimitiveOutputsCount(splitNode, snapshot.length, PRIMITIVE_SLOT_TYPE);
+    for (let i = 0; i < snapshot.length; i++) {
+        const out = splitNode.outputs?.[i];
+        const snap = snapshot[i];
+        if (!out || !snap) {
+            continue;
+        }
+        out.name = snap.name;
+        out.type = PRIMITIVE_SLOT_TYPE; // 復元中は互換型で受ける
+        out.label = snap.name; // 画面表示は INT_01 などの名前を優先
+    }
+    normalizeLengthOutput(splitNode);
+}
+
+function getDesiredPrimitiveSlots(combineNode, splitNode) {
+    // 1) Combine 側に保存された slot 情報があればそれを優先（復元直後の接続揺れを回避しやすい）
+    const stored = getStoredPrimitiveSlotTypes(combineNode);
+    if (stored && stored.length > 0) {
+        return stored.map((s) => ({ name: s.name, type: s.type }));
+    }
+
+    // 2) なければ combine.inputs のうち「接続されている primitive_*」だけを走査して型を推定
+    // （未接続の予備スロットは Split 出力に含めない）
+    const desired = [];
+    for (let i = 0; i < (combineNode.inputs || []).length; i++) {
+        const inp = combineNode.inputs[i];
+        if (!inp?.name?.startsWith("primitive_")) {
+            continue;
+        }
+        if (!inp.link) {
+            continue;
+        }
+        desired.push({
+            name: inp.name,
+            type: resolvePrimitiveSlotType(combineNode, i, inp),
+        });
+    }
+
+    if (desired.length === 0) {
+        desired.push({ name: "primitive_01", type: PRIMITIVE_SLOT_TYPE });
+    }
+
+    return desired;
+}
+
+function syncSplitFromCombine(splitNode, combineNode) {
+    ensureLengthOutput(splitNode);
+
+    // 復元/コピペ直後の短時間は削除を抑止（コピー＆ペースト復元途中で既存ソケットが消える事故を防ぐ）
+    const restoring = Date.now() < (splitNode._miscSplitRestoringUntil || 0);
+    const combinedInput = splitNode.inputs?.find((inp) => inp.name === "combined");
+    const hasCombinedLink = !!combinedInput?.link;
+
+    // 復元中に Combine がまだ辿れない瞬間がある（リンク復元順の都合）。
+    // その瞬間にフォールバック出力へ上書きすると、保存済みの INT,FLOAT が崩れるため、
+    // restoring 中は Combine が見つかるまで「出力構成を保持」する（縮小・型変更・名前変更をしない）。
+    if (restoring && !combineNode) {
+        // 再接続が成立するよう primitive_* を汎用型にしつつ、表示名は保持する。
+        setGenericPrimitiveOutputs(splitNode);
+        normalizeLengthOutput(splitNode);
+        return;
+    }
+
+    // Combine が辿れないが combined 入力は接続されている場合、復元キャッシュがあればそれを維持する
+    // （コピペ復元中に primitive_02 が未生成で切断される問題を回避）
+    let desired;
+    if (!combineNode && hasCombinedLink && Array.isArray(splitNode._miscSplitCachedDesired) && splitNode._miscSplitCachedDesired.length) {
+        desired = splitNode._miscSplitCachedDesired;
+    } else {
+        desired = combineNode
+            ? getDesiredPrimitiveSlots(combineNode, splitNode)
+            : [{ name: "primitive_01", type: PRIMITIVE_SLOT_TYPE }];
+    }
+    const desiredCount = desired.length;
+
+    // 必要なら追加（縮小はしない/リンクがないときだけ）
+    while (countPrimitiveDataOutputs(splitNode) < desiredCount) {
+        const idx = countPrimitiveDataOutputs(splitNode);
+        const slot = desired[idx];
+        if (!slot) {
+            break;
+        }
+        addPrimitiveOutputBeforeLength(splitNode, formatTypedOutputName(slot.type, idx), slot.type);
+    }
+
+    while (countPrimitiveDataOutputs(splitNode) > desiredCount) {
+        const removeIndex = countPrimitiveDataOutputs(splitNode) - 1;
+        const output = splitNode.outputs[removeIndex];
+
+        if (restoring) {
+            break;
+        }
+        if (output?.links?.length) {
+            break;
+        }
+        splitNode.removeOutput(removeIndex);
+    }
+
+    // 名前・型・ラベルの同期
+    for (let i = 0; i < desiredCount; i++) {
+        const output = splitNode.outputs[i];
+        if (!output) {
+            break;
+        }
+
+        const want = desired[i];
+        if (!want) {
+            continue;
+        }
+
+        const typedName = formatTypedOutputName(want.type, i);
+        if (output.name !== typedName) {
+            output.name = typedName;
+        }
+
+        if (restoring) {
+            output.type = PRIMITIVE_SLOT_TYPE;
+        } else {
+            output.type = reconcilePrimitiveSlotType(output.type, want.type);
+        }
+
+        // 仕様③: 表示名も INT_01 / FLOAT_02 のようにする
+        output.label = output.name;
+    }
+
+    normalizeLengthOutput(splitNode);
+}
+
 /**
  * @param {Function} nodeType
  */
@@ -67,30 +296,61 @@ function setupSplitPrimitives(nodeType) {
     nodeType.prototype.onNodeCreated = function () {
         const result = onNodeCreated?.apply(this, arguments);
         this.stabilizeBound = this.stabilize.bind(this);
-        this._miscSplitGraphReady = false;
+        // 新規作成時は onConfigure が呼ばれないため、ここで ready にする。
+        this._miscSplitGraphReady = true;
+        this._miscSplitRestoringUntil = 0;
+        this._miscSplitCachedOutputs = null;
+        this._miscSplitCachedDesired = null;
+
         if (this.inputs[0]) {
             this.inputs[0].type = PRIMITIVES_TYPE;
         }
+        // 新規作成直後にも 1 回同期しておく
+        requestAnimationFrame(() => this.scheduleStabilize(0));
         return result;
     };
 
     nodeType.prototype.onConfigure = function () {
         const result = onConfigure?.apply(this, arguments);
         this._miscSplitGraphReady = true;
-        // ワークフロー復元後にリンクが揃ってから同期する
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => this.scheduleStabilize(0));
-        });
+
+        // 復元/コピペ直後の短時間だけ縮小や切断リスクを下げる
+        this._miscSplitRestoringUntil = Date.now() + RESTORE_WINDOW_MS;
+        // 仕様⑥: 復元時点の出力構成をキャッシュして、先にソケット本数を確保する
+        this._miscSplitCachedOutputs = collectExistingOutputSnapshot(this);
+        this._miscSplitCachedDesired = this._miscSplitCachedOutputs
+            ? this._miscSplitCachedOutputs.map((s) => ({ name: s.name, type: s.type }))
+            : null;
+        applySnapshotPlaceholders(this, this._miscSplitCachedOutputs);
+
+        // 復元中はリンクと型の復元順が不定なので、少し間隔をあけて複数回同期を試みる。
+        // （最初の 1 回で Combine まで辿れない場合がある）
+        const kick = () => {
+            if (!this.removed) {
+                this.scheduleStabilize(0);
+            }
+        };
+
+        requestAnimationFrame(() => requestAnimationFrame(kick));
+        setTimeout(kick, 80);
+        setTimeout(kick, 200);
+        setTimeout(kick, 500);
+        setTimeout(kick, 1200);
         return result;
     };
 
     nodeType.prototype.onConnectionsChange = function (type, slotIndex, isConnected, linkInfo, ioSlot) {
         onConnectionsChange?.call(this, type, slotIndex, isConnected, linkInfo, ioSlot);
-        // 出力側の接続変更で stabilize すると removeOutput により即切断される
+
+        // 出力側の接続変更で stabilize すると removeOutput により即切断される事故がある。
         if (ioSlot && this.outputs?.includes(ioSlot)) {
             return;
         }
         if (type === IoDirection.OUTPUT) {
+            return;
+        }
+
+        if (!this._miscSplitGraphReady) {
             return;
         }
         this.scheduleStabilize();
@@ -108,18 +368,28 @@ function setupSplitPrimitives(nodeType) {
     };
 
     nodeType.prototype.stabilize = function () {
+        if (!this._miscSplitGraphReady) {
+            return;
+        }
+
         if (this.inputs[0]) {
             this.inputs[0].type = PRIMITIVES_TYPE;
         }
 
         const combineNode = findLinkedCombineNode(this, COMBINE_NODE_CLASS);
-        const connected = combineNode ? getSplitDesiredOutputSlots(combineNode, this) : [];
-        const hasExistingOutputs = countPrimitiveDataOutputs(this) > 0;
+        const restoring = Date.now() < (this._miscSplitRestoringUntil || 0);
+        syncSplitFromCombine(this, combineNode);
 
-        syncSplitOutputsFromCombine(this, connected, {
-            preserveExisting:
-                !combineNode || (connected.length === 0 && hasExistingOutputs),
-        });
+        if (restoring && combineNode && this._miscSplitCachedOutputs) {
+            const current = collectExistingOutputSnapshot(this);
+            const cached = this._miscSplitCachedOutputs;
+            const differs =
+                current.length !== cached.length ||
+                current.some((s, i) => s.name !== cached[i]?.name || s.type !== cached[i]?.type);
+            if (differs) {
+                requestAnimationFrame(() => this.scheduleStabilize(0));
+            }
+        }
     };
 }
 
@@ -138,6 +408,7 @@ app.registerExtension({
             combined: [PRIMITIVES_TYPE],
             ...(nodeData.input.required ?? {}),
         };
+
         nodeData.output = [PRIMITIVE_SLOT_TYPE, "INT"];
         nodeData.output_name = ["primitive_01", "length"];
 
