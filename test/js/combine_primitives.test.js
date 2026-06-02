@@ -13,6 +13,7 @@ import {
     slotLabelForLinkType,
 } from "../../js/utils/constants.js";
 import { getDataOutputNamePrefix } from "../../js/utils/naming.js";
+import { syncPrimitivesLinkSlot } from "../../js/utils/constants.js";
 import { listLinkedPrimitiveInputs } from "../../js/logic/split-primitives-names.js";
 
 describe("combine_primitives", () => {
@@ -31,6 +32,13 @@ describe("combine_primitives", () => {
             expect(slotLabelForLinkType("PRIMITIVES")).toBe("combined");
             expect(slotLabelForLinkType("combined")).toBe("combined");
             expect(getDataOutputNamePrefix("PRIMITIVES")).toBe("combined");
+        });
+
+        it("syncPrimitivesLinkSlot は type と label を揃える", () => {
+            const slot = { type: "*", label: "*" };
+            syncPrimitivesLinkSlot(slot);
+            expect(slot.type).toBe(PRIMITIVES_TYPE);
+            expect(slot.label).toBe("combined");
         });
     });
 

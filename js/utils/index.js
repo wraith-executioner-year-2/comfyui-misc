@@ -7,7 +7,7 @@
 
 export { debounce } from "./debounce.js";
 export { getNodeGraph } from "./graph-context.js";
-export { getGraphLink } from "./graph-links.js";
+export { forEachGraphLink, getGraphLink } from "./graph-links.js";
 
 export {
     IoDirection,
@@ -23,6 +23,7 @@ export {
     isPrimitivesLinkType,
     PRIMITIVES_DISPLAY_LABEL,
     slotLabelForLinkType,
+    syncPrimitivesLinkSlot,
 } from "./constants.js";
 
 export { getSlotLinks, followConnectionUntilType, isConcretePrimitiveSlotType } from "./connection-type.js";

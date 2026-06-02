@@ -19,7 +19,9 @@ import {
     followConnectionUntilType,
     getDataOutputNamePrefix,
     getIndexOutputSlotIndex,
+    isPrimitivesLinkType,
     slotLabelForLinkType,
+    syncPrimitivesLinkSlot,
     propagatePrimitiveSplitSync,
     removeUnusedDataOutputsFromEnd,
     renumberDataOutputs,
@@ -120,12 +122,10 @@ function setupMiscAnyOutputSwitch(nodeType) {
         const prefix = getDataOutputNamePrefix(this.nodeType);
 
         const mainInput = getMainInput(this);
-        if (mainInput) {
+        if (mainInput && isPrimitivesLinkType(this.nodeType)) {
+            syncPrimitivesLinkSlot(mainInput, this.nodeType);
+        } else if (mainInput) {
             mainInput.type = this.nodeType;
-            const primitivesLabel = slotLabelForLinkType(this.nodeType);
-            if (primitivesLabel) {
-                mainInput.label = primitivesLabel;
-            }
         }
 
         for (const input of this.inputs ?? []) {

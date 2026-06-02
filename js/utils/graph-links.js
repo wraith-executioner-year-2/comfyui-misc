@@ -23,3 +23,21 @@ export function getGraphLink(graph, linkId) {
     return links[linkId] ?? null;
 }
 
+/**
+ * @param {object} graph
+ * @param {(link: object, linkId?: string|number) => void} callback
+ */
+export function forEachGraphLink(graph, callback) {
+    const links = graph?.links;
+    if (!links) {
+        return;
+    }
+    if (typeof links.forEach === "function") {
+        links.forEach((link, linkId) => callback(link, linkId));
+        return;
+    }
+    for (const linkId of Object.keys(links)) {
+        callback(links[linkId], linkId);
+    }
+}
+

@@ -46,6 +46,23 @@ export function slotLabelForLinkType(type) {
     return null;
 }
 
+/**
+ * combined / PRIMITIVES リンク用ソケットの type と表示ラベルを揃える。
+ *
+ * @param {object|undefined|null} slot
+ * @param {string} [type=PRIMITIVES_TYPE]
+ */
+export function syncPrimitivesLinkSlot(slot, type = PRIMITIVES_TYPE) {
+    if (!slot) {
+        return;
+    }
+    slot.type = type;
+    const label = slotLabelForLinkType(type);
+    if (label) {
+        slot.label = label;
+    }
+}
+
 /** @deprecated PRIMITIVES_TYPE を使用 */
 export const COMBINED_PRIMITIVES_TYPE = PRIMITIVES_TYPE;
 

@@ -1,25 +1,7 @@
 import { remapInputTargetSlot } from "../logic/input-slot-remap.js";
 import { getNodeGraph } from "./graph-context.js";
-import { getGraphLink } from "./graph-links.js";
+import { forEachGraphLink, getGraphLink } from "./graph-links.js";
 import { SELECT_INDEX_KEY } from "./select-index.js";
-
-/**
- * @param {object} graph
- * @param {(link: object, linkId?: string|number) => void} callback
- */
-function forEachGraphLink(graph, callback) {
-    const links = graph?.links;
-    if (!links) {
-        return;
-    }
-    if (typeof links.forEach === "function") {
-        links.forEach((link, linkId) => callback(link, linkId));
-        return;
-    }
-    for (const linkId of Object.keys(links)) {
-        callback(links[linkId], linkId);
-    }
-}
 
 /**
  * select_index 入力を末尾へ移し、既存リンクの target_slot を更新する。

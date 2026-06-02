@@ -1,21 +1,11 @@
 /**
- * Split Primitives (misc)
- *
- * Combine Primitives (misc) の primitive_* 情報を基に、Split 側の
- * primitive_* 出力（可変）と末尾 length を同期します。
- *
- * 設計方針:
- * - コピー＆ペースト/ワークフロー復元の途中では「一時的な型欠け」や
- *   「一時的な接続情報欠け」が発生し得るため、同期中に強制的な
- *   disconnect を行わない。
- * - 復元直後の短時間は出力の縮小（removeOutput）を抑止し、
- *   既存の接続スロットが消えないようにする。
+ * Split Primitives (misc) — Combine の primitive_* 構成を出力へ同期する。
+ * 復元・コピペ直後は disconnect / removeOutput を抑え、リンク復元揺れを吸収する。
  */
 
 import { app } from "../../scripts/app.js";
 import {
-    PRIMITIVES_TYPE,
-    slotLabelForLinkType,
+    syncPrimitivesLinkSlot,
     COMBINE_PRIMITIVES_NODE_CLASS,
     IoDirection,
     PRIMITIVE_SLOT_TYPE,
@@ -288,13 +278,7 @@ function setupSplitPrimitives(nodeType) {
         this._miscSplitCachedOutputs = null;
         this._miscSplitCachedDesired = null;
 
-        if (this.inputs[0]) {
-            this.inputs[0].type = PRIMITIVES_TYPE;
-            const combinedLabel = slotLabelForLinkType(PRIMITIVES_TYPE);
-            if (combinedLabel) {
-                this.inputs[0].label = combinedLabel;
-            }
-        }
+        syncPrimitivesLinkSlot(this.inputs[0]);
         // 新規作成直後にも 1 回同期しておく
         requestAnimationFrame(() => this.scheduleStabilize(0));
         return result;
@@ -371,13 +355,7 @@ function setupSplitPrimitives(nodeType) {
             return;
         }
 
-        if (this.inputs[0]) {
-            this.inputs[0].type = PRIMITIVES_TYPE;
-            const combinedLabel = slotLabelForLinkType(PRIMITIVES_TYPE);
-            if (combinedLabel) {
-                this.inputs[0].label = combinedLabel;
-            }
-        }
+        syncPrimitivesLinkSlot(this.inputs[0]);
 
         const combineNode = findLinkedCombineNode(this, COMBINE_NODE_CLASS);
         const restoring = Date.now() < (this._miscSplitRestoringUntil || 0);

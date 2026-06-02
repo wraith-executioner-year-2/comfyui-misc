@@ -1,11 +1,4 @@
-/**
- * Any Switch (misc) — フロントエンド拡張
- *
- * 画面上で any_01, any_02 … の入力スロットを増減し、
- * 接続されている型（IMAGE など）に合わせてスロット表示を揃えます。
- *
- * Python 側の MiscAnySwitch と名前 "Any Switch (misc)" で対応します。
- */
+/** Any Switch (misc) — 可変 any_* 入力と select_index（INT ソケット）による切替。 */
 
 import { app } from "../../scripts/app.js";
 import {
@@ -158,7 +151,6 @@ function setupMiscAnySwitch(nodeType) {
         }
 
         this.nodeType = connectedType?.type || "*";
-        const primitivesLabel = slotLabelForLinkType(this.nodeType);
         for (const input of this.inputs) {
             if (input.name === SELECT_INDEX_KEY) {
                 input.type = "INT";
@@ -166,8 +158,9 @@ function setupMiscAnySwitch(nodeType) {
             }
             if (input.name?.startsWith("any_")) {
                 input.type = this.nodeType;
-                if (primitivesLabel) {
-                    input.label = primitivesLabel;
+                const label = slotLabelForLinkType(this.nodeType);
+                if (label) {
+                    input.label = label;
                 }
             }
         }

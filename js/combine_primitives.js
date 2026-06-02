@@ -1,14 +1,9 @@
-/**
- * Combine Primitives (misc) — フロントエンド拡張
- *
- * primitive_01 … の可変入力を持ち、combined / length を出力します。
- * Primitive 型以外は接続できません。
- */
+/** Combine Primitives (misc) — primitive_* を combined / length にまとめる。 */
 
 import { app } from "../../scripts/app.js";
 import {
     PRIMITIVES_TYPE,
-    slotLabelForLinkType,
+    syncPrimitivesLinkSlot,
     COMBINE_PRIMITIVES_NODE_CLASS,
     PRIMITIVE_SLOT_TYPE,
     MISC_PRIMITIVE_SLOT_TYPES_KEY,
@@ -98,14 +93,7 @@ function setupCombinePrimitives(nodeType) {
             delete this.properties[MISC_PRIMITIVE_SLOT_TYPES_KEY];
         }
 
-        const combinedOut = this.outputs.find((o) => o.name === "combined");
-        if (combinedOut) {
-            combinedOut.type = PRIMITIVES_TYPE;
-            const label = slotLabelForLinkType(PRIMITIVES_TYPE);
-            if (label) {
-                combinedOut.label = label;
-            }
-        }
+        syncPrimitivesLinkSlot(this.outputs.find((o) => o.name === "combined"));
 
         notifyDownstreamSplitNodes(this, SPLIT_NODE_CLASS);
     };
