@@ -1,6 +1,6 @@
 # comfyui-misc
 
-![](https://files.catbox.moe/d86cxg.png)
+![](https://files.catbox.moe/1w7o94.png)
 ![](https://files.catbox.moe/32mwi2.png)
 
 小さなユーティリティ系ワークフロー向けの ComfyUI カスタムノード集です。
