@@ -15,6 +15,7 @@
 import { app } from "../../scripts/app.js";
 import {
     PRIMITIVES_TYPE,
+    slotLabelForLinkType,
     COMBINE_PRIMITIVES_NODE_CLASS,
     IoDirection,
     PRIMITIVE_SLOT_TYPE,
@@ -289,6 +290,10 @@ function setupSplitPrimitives(nodeType) {
 
         if (this.inputs[0]) {
             this.inputs[0].type = PRIMITIVES_TYPE;
+            const combinedLabel = slotLabelForLinkType(PRIMITIVES_TYPE);
+            if (combinedLabel) {
+                this.inputs[0].label = combinedLabel;
+            }
         }
         // 新規作成直後にも 1 回同期しておく
         requestAnimationFrame(() => this.scheduleStabilize(0));
@@ -368,6 +373,10 @@ function setupSplitPrimitives(nodeType) {
 
         if (this.inputs[0]) {
             this.inputs[0].type = PRIMITIVES_TYPE;
+            const combinedLabel = slotLabelForLinkType(PRIMITIVES_TYPE);
+            if (combinedLabel) {
+                this.inputs[0].label = combinedLabel;
+            }
         }
 
         const combineNode = findLinkedCombineNode(this, COMBINE_NODE_CLASS);

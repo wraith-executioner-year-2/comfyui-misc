@@ -20,6 +20,9 @@ export {
     SPLIT_PRIMITIVES_NODE_CLASS,
     MISC_PRIMITIVE_SLOT_TYPES_KEY,
     isGenericPrimitiveUnionType,
+    isPrimitivesLinkType,
+    PRIMITIVES_DISPLAY_LABEL,
+    slotLabelForLinkType,
 } from "./constants.js";
 
 export { getSlotLinks, followConnectionUntilType, isConcretePrimitiveSlotType } from "./connection-type.js";

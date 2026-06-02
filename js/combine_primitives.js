@@ -8,6 +8,7 @@
 import { app } from "../../scripts/app.js";
 import {
     PRIMITIVES_TYPE,
+    slotLabelForLinkType,
     COMBINE_PRIMITIVES_NODE_CLASS,
     PRIMITIVE_SLOT_TYPE,
     MISC_PRIMITIVE_SLOT_TYPES_KEY,
@@ -100,6 +101,10 @@ function setupCombinePrimitives(nodeType) {
         const combinedOut = this.outputs.find((o) => o.name === "combined");
         if (combinedOut) {
             combinedOut.type = PRIMITIVES_TYPE;
+            const label = slotLabelForLinkType(PRIMITIVES_TYPE);
+            if (label) {
+                combinedOut.label = label;
+            }
         }
 
         notifyDownstreamSplitNodes(this, SPLIT_NODE_CLASS);

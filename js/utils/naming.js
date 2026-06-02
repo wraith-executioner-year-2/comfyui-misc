@@ -1,8 +1,11 @@
-import { isGenericPrimitiveUnionType } from "./constants.js";
+import { isGenericPrimitiveUnionType, isPrimitivesLinkType, PRIMITIVES_DISPLAY_LABEL } from "./constants.js";
 
 export function getDataOutputNamePrefix(nodeType) {
     if (!nodeType || nodeType === "*") {
         return "any";
+    }
+    if (isPrimitivesLinkType(nodeType)) {
+        return PRIMITIVES_DISPLAY_LABEL;
     }
     if (nodeType === "RGTHREE_CONTEXT") {
         return "CONTEXT";
@@ -21,6 +24,9 @@ export function formatDataOutputName(prefix, oneBasedIndex) {
 export function formatPrimitiveOutputLabel(type, fallbackName = "") {
     if (Array.isArray(type)) {
         return "COMBO";
+    }
+    if (isPrimitivesLinkType(type)) {
+        return PRIMITIVES_DISPLAY_LABEL;
     }
     if (typeof type === "string" && !isGenericPrimitiveUnionType(type)) {
         if (type.includes(",")) {

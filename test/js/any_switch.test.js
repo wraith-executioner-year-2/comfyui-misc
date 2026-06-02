@@ -3,13 +3,17 @@ import { computeSelectIndexMax } from "../../js/logic/select-index-bounds.js";
 import { miscSlotTypesConnect } from "../../js/logic/litegraph-type-compat.js";
 import { countAnySwitchInputs, SELECT_INDEX_KEY } from "../../js/utils/select-index.js";
 import { syncSelectIndexWidget } from "../../js/utils/select-index.js";
-import { PRIMITIVES_TYPE } from "../../js/utils/constants.js";
+import { PRIMITIVES_DISPLAY_LABEL, PRIMITIVES_TYPE, slotLabelForLinkType } from "../../js/utils/constants.js";
 
 describe("any_switch", () => {
     describe("miscSlotTypesConnect", () => {
         it("Combine combined (PRIMITIVES) を any_01 (*) に接続可能", () => {
             expect(miscSlotTypesConnect(PRIMITIVES_TYPE, "*")).toBe(true);
             expect(miscSlotTypesConnect("*", PRIMITIVES_TYPE)).toBe(true);
+        });
+
+        it("PRIMITIVES リンク型の表示は combined", () => {
+            expect(slotLabelForLinkType(PRIMITIVES_TYPE)).toBe(PRIMITIVES_DISPLAY_LABEL);
         });
     });
 

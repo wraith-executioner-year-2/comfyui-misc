@@ -17,6 +17,7 @@ import {
     followConnectionUntilType,
     propagatePrimitiveSplitSync,
     removeUnusedInputsFromEnd,
+    slotLabelForLinkType,
     syncSelectIndexWidget,
 } from "./utils.js";
 import {
@@ -46,6 +47,11 @@ const DEFAULT_ANY_INPUTS = Object.fromEntries(
  * @param {{label?: string}|null} connectedType - 接続先から取った型情報
  */
 function applyOutputLabels(output, nodeType, connectedType) {
+    const primitivesLabel = slotLabelForLinkType(nodeType);
+    if (primitivesLabel) {
+        output.label = primitivesLabel;
+        return;
+    }
     output.label =
         nodeType === "RGTHREE_CONTEXT"
             ? "CONTEXT"
@@ -152,6 +158,7 @@ function setupMiscAnySwitch(nodeType) {
         }
 
         this.nodeType = connectedType?.type || "*";
+        const primitivesLabel = slotLabelForLinkType(this.nodeType);
         for (const input of this.inputs) {
             if (input.name === SELECT_INDEX_KEY) {
                 input.type = "INT";
@@ -159,6 +166,9 @@ function setupMiscAnySwitch(nodeType) {
             }
             if (input.name?.startsWith("any_")) {
                 input.type = this.nodeType;
+                if (primitivesLabel) {
+                    input.label = primitivesLabel;
+                }
             }
         }
         for (let i = 0; i < this.outputs.length; i++) {

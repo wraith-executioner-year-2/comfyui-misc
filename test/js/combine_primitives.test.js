@@ -7,9 +7,12 @@ import {
 import {
     MISC_PRIMITIVE_SLOT_TYPES_KEY,
     PRIMITIVE_SLOT_TYPE,
+    PRIMITIVES_DISPLAY_LABEL,
     PRIMITIVES_TYPE,
     isPrimitivesLinkType,
+    slotLabelForLinkType,
 } from "../../js/utils/constants.js";
+import { getDataOutputNamePrefix } from "../../js/utils/naming.js";
 import { listLinkedPrimitiveInputs } from "../../js/logic/split-primitives-names.js";
 
 describe("combine_primitives", () => {
@@ -21,6 +24,13 @@ describe("combine_primitives", () => {
         it("旧 combined エイリアスもリンク型として互換", () => {
             expect(isPrimitivesLinkType("combined")).toBe(true);
             expect(isPrimitivesLinkType("PRIMITIVES")).toBe(true);
+        });
+
+        it("画面上の表示ラベルは combined に統一", () => {
+            expect(PRIMITIVES_DISPLAY_LABEL).toBe("combined");
+            expect(slotLabelForLinkType("PRIMITIVES")).toBe("combined");
+            expect(slotLabelForLinkType("combined")).toBe("combined");
+            expect(getDataOutputNamePrefix("PRIMITIVES")).toBe("combined");
         });
     });
 

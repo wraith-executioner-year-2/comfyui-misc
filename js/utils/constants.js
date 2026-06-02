@@ -30,6 +30,22 @@ export function isPrimitivesLinkType(type) {
     return type != null && PRIMITIVES_TYPE_ALIASES.has(String(type));
 }
 
+/** キャンバス上のソケット表示名（内部リンク型 PRIMITIVES と対） */
+export const PRIMITIVES_DISPLAY_LABEL = "combined";
+
+/**
+ * リンク型に対応するソケット表示ラベル。PRIMITIVES 系は ``combined`` に統一。
+ *
+ * @param {string|Array|undefined|null} type
+ * @returns {string|null} 上書きラベル。不要なら null
+ */
+export function slotLabelForLinkType(type) {
+    if (isPrimitivesLinkType(type)) {
+        return PRIMITIVES_DISPLAY_LABEL;
+    }
+    return null;
+}
+
 /** @deprecated PRIMITIVES_TYPE を使用 */
 export const COMBINED_PRIMITIVES_TYPE = PRIMITIVES_TYPE;
 
