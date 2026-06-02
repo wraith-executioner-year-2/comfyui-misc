@@ -6,6 +6,7 @@
  */
 
 export { debounce } from "./debounce.js";
+export { getNodeGraph } from "./graph-context.js";
 export { getGraphLink } from "./graph-links.js";
 
 export {

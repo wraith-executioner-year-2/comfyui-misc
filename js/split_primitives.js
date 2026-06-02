@@ -124,6 +124,21 @@ function normalizeLengthOutput(splitNode) {
     lengthOut.label = LENGTH_OUTPUT_NAME;
 }
 
+/** 再描画（ExportWorkflowImage 等）で label だけ消えた場合に表示名を name に揃える */
+function ensureSplitOutputLabels(splitNode) {
+    const end = countPrimitiveDataOutputs(splitNode);
+    for (let i = 0; i < end; i++) {
+        const out = splitNode.outputs?.[i];
+        if (!out?.name) {
+            continue;
+        }
+        if (out.label !== out.name) {
+            out.label = out.name;
+        }
+    }
+    normalizeLengthOutput(splitNode);
+}
+
 function setGenericPrimitiveOutputs(splitNode) {
     const end = countPrimitiveDataOutputs(splitNode);
     for (let i = 0; i < end; i++) {
@@ -251,7 +266,7 @@ function syncSplitFromCombine(splitNode, combineNode) {
         output.label = output.name;
     }
 
-    normalizeLengthOutput(splitNode);
+    ensureSplitOutputLabels(splitNode);
 }
 
 /**
@@ -261,6 +276,7 @@ function setupSplitPrimitives(nodeType) {
     const onNodeCreated = nodeType.prototype.onNodeCreated;
     const onConnectionsChange = nodeType.prototype.onConnectionsChange;
     const onConfigure = nodeType.prototype.onConfigure;
+    const onDrawForeground = nodeType.prototype.onDrawForeground;
 
     nodeType.prototype.onNodeCreated = function () {
         const result = onNodeCreated?.apply(this, arguments);
@@ -291,6 +307,8 @@ function setupSplitPrimitives(nodeType) {
             ? this._miscSplitCachedOutputs.map((s) => ({ name: s.name, type: s.type }))
             : null;
         applySnapshotPlaceholders(this, this._miscSplitCachedOutputs);
+        // オフスクリーン複製など、直後の 1 フレーム描画前に名前を確定させる
+        this.stabilize();
 
         // 復元中はリンクと型の復元順が不定なので、少し間隔をあけて複数回同期を試みる。
         // （最初の 1 回で Combine まで辿れない場合がある）
@@ -334,6 +352,13 @@ function setupSplitPrimitives(nodeType) {
 
     nodeType.prototype.scheduleStabilize = function (ms = 64) {
         return debounce(this.stabilizeBound, ms);
+    };
+
+    nodeType.prototype.onDrawForeground = function (ctx) {
+        onDrawForeground?.call(this, ctx);
+        if (this._miscSplitGraphReady) {
+            ensureSplitOutputLabels(this);
+        }
     };
 
     nodeType.prototype.stabilize = function () {

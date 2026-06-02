@@ -1,22 +1,26 @@
-import { app } from "../../../scripts/app.js";
 import { IoDirection, isGenericPrimitiveUnionType } from "./constants.js";
+import { getNodeGraph } from "./graph-context.js";
 import { getGraphLink } from "./graph-links.js";
 
-export function getSlotLinks(inputOrOutput) {
+export function getSlotLinks(inputOrOutput, graph) {
     const links = [];
     if (!inputOrOutput) {
         return links;
     }
+    const linksGraph = graph;
+    if (!linksGraph) {
+        return links;
+    }
     if (inputOrOutput.links?.length) {
         for (const linkId of inputOrOutput.links) {
-            const link = getGraphLink(app.graph, linkId);
+            const link = getGraphLink(linksGraph, linkId);
             if (link) {
                 links.push({ id: linkId, link });
             }
         }
     }
     if (inputOrOutput.link) {
-        const link = getGraphLink(app.graph, inputOrOutput.link);
+        const link = getGraphLink(linksGraph, inputOrOutput.link);
         if (link) {
             links.push({ id: inputOrOutput.link, link });
         }
@@ -34,16 +38,19 @@ function isConcretePrimitiveSlotType(type) {
     return !isGenericPrimitiveUnionType(type);
 }
 
-function getTypeFromSlot(slot, dir, skipSelf = false) {
-    const graph = app.canvas.getCurrentGraph();
+function getTypeFromSlot(slot, dir, skipSelf, graph) {
+    const resolvedGraph = graph;
+    if (!resolvedGraph) {
+        return null;
+    }
     const type = slot?.type;
     if (!skipSelf && isConcretePrimitiveSlotType(type)) {
         return { type, label: slot?.label, name: slot?.name };
     }
-    for (const { link } of getSlotLinks(slot)) {
+    for (const { link } of getSlotLinks(slot, resolvedGraph)) {
         const connectedId = dir === IoDirection.OUTPUT ? link.target_id : link.origin_id;
         const connectedSlotNum = dir === IoDirection.OUTPUT ? link.target_slot : link.origin_slot;
-        const connectedNode = graph.getNodeById(connectedId);
+        const connectedNode = resolvedGraph.getNodeById(connectedId);
         if (!connectedNode) {
             continue;
         }
@@ -67,6 +74,10 @@ function getTypeFromSlot(slot, dir, skipSelf = false) {
 }
 
 export function followConnectionUntilType(node, dir, slotNum, skipSelf = false) {
+    const graph = getNodeGraph(node);
+    if (!graph) {
+        return null;
+    }
     const slots = dir === IoDirection.OUTPUT ? node.outputs : node.inputs;
     if (!slots?.length) {
         return null;
@@ -75,10 +86,10 @@ export function followConnectionUntilType(node, dir, slotNum, skipSelf = false) 
         if (!slots[slotNum]) {
             return null;
         }
-        return getTypeFromSlot(slots[slotNum], dir, skipSelf);
+        return getTypeFromSlot(slots[slotNum], dir, skipSelf, graph);
     }
     for (const slot of slots) {
-        const type = getTypeFromSlot(slot, dir, skipSelf);
+        const type = getTypeFromSlot(slot, dir, skipSelf, graph);
         if (type) {
             return type;
         }
