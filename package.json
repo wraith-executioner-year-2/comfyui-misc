@@ -1,0 +1,12 @@
+{
+  "name": "comfyui-misc",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vitest watch",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
+}

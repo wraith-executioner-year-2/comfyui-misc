@@ -30,6 +30,13 @@ import {
 } from "./utils.js";
 
 import { createTrailingOutputHelpers } from "./utils/trailing-output.js";
+import {
+    formatTypedOutputName,
+    typeNameForPrimitiveSlotType,
+    listLinkedPrimitiveInputs,
+    pickDesiredDuringSync,
+    resolveDesiredPrimitiveSlots,
+} from "./logic/split-primitives-names.js";
 
 const NODE_CLASS = SPLIT_PRIMITIVES_NODE_CLASS;
 const COMBINE_NODE_CLASS = COMBINE_PRIMITIVES_NODE_CLASS;
@@ -84,28 +91,6 @@ function addPrimitiveOutputBeforeLength(node, name, type) {
         node.addOutput(name, type);
         ensureLengthOutput(node);
     }
-}
-
-function typeNameForPrimitiveSlotType(type) {
-    if (Array.isArray(type)) {
-        return "COMBO";
-    }
-    const text = String(type ?? "").trim();
-    if (
-        text === "INT" ||
-        text === "FLOAT" ||
-        text === "STRING" ||
-        text === "BOOLEAN" ||
-        text === "COMBO"
-    ) {
-        return text;
-    }
-    return "PRIMITIVE";
-}
-
-function formatTypedOutputName(type, index0) {
-    const typeName = typeNameForPrimitiveSlotType(type);
-    return `${typeName}_${String(index0 + 1).padStart(2, "0")}`;
 }
 
 function collectExistingOutputSnapshot(splitNode) {
@@ -171,35 +156,19 @@ function applySnapshotPlaceholders(splitNode, snapshot) {
     normalizeLengthOutput(splitNode);
 }
 
-function getDesiredPrimitiveSlots(combineNode, splitNode) {
-    // 1) Combine 側に保存された slot 情報があればそれを優先（復元直後の接続揺れを回避しやすい）
-    const stored = getStoredPrimitiveSlotTypes(combineNode);
-    if (stored && stored.length > 0) {
-        return stored.map((s) => ({ name: s.name, type: s.type }));
-    }
-
-    // 2) なければ combine.inputs のうち「接続されている primitive_*」だけを走査して型を推定
-    // （未接続の予備スロットは Split 出力に含めない）
-    const desired = [];
-    for (let i = 0; i < (combineNode.inputs || []).length; i++) {
+function listLinkedWithResolvedTypes(combineNode) {
+    const linked = [];
+    for (let i = 0; i < (combineNode.inputs ?? []).length; i++) {
         const inp = combineNode.inputs[i];
-        if (!inp?.name?.startsWith("primitive_")) {
+        if (!inp?.name?.startsWith("primitive_") || !inp.link) {
             continue;
         }
-        if (!inp.link) {
-            continue;
-        }
-        desired.push({
+        linked.push({
             name: inp.name,
             type: resolvePrimitiveSlotType(combineNode, i, inp),
         });
     }
-
-    if (desired.length === 0) {
-        desired.push({ name: "primitive_01", type: PRIMITIVE_SLOT_TYPE });
-    }
-
-    return desired;
+    return linked;
 }
 
 function syncSplitFromCombine(splitNode, combineNode) {
@@ -222,14 +191,14 @@ function syncSplitFromCombine(splitNode, combineNode) {
 
     // Combine が辿れないが combined 入力は接続されている場合、復元キャッシュがあればそれを維持する
     // （コピペ復元中に primitive_02 が未生成で切断される問題を回避）
-    let desired;
-    if (!combineNode && hasCombinedLink && Array.isArray(splitNode._miscSplitCachedDesired) && splitNode._miscSplitCachedDesired.length) {
-        desired = splitNode._miscSplitCachedDesired;
-    } else {
-        desired = combineNode
-            ? getDesiredPrimitiveSlots(combineNode, splitNode)
-            : [{ name: "primitive_01", type: PRIMITIVE_SLOT_TYPE }];
-    }
+    const desired = pickDesiredDuringSync({
+        restoring,
+        combineNode,
+        hasCombinedLink,
+        cachedDesired: splitNode._miscSplitCachedDesired,
+        linked: combineNode ? listLinkedWithResolvedTypes(combineNode) : [],
+        stored: combineNode ? getStoredPrimitiveSlotTypes(combineNode) : null,
+    });
     const desiredCount = desired.length;
 
     // 必要なら追加（縮小はしない/リンクがないときだけ）

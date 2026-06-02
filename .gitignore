@@ -16,3 +16,4 @@ Thumbs.db
 
 # Local test artifacts
 .pytest_cache/
+node_modules/

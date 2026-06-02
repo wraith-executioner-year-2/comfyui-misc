@@ -1,4 +1,5 @@
 import { app } from "../../../scripts/app.js";
+import { getGraphLink } from "./graph-links.js";
 import { INDEX_OUTPUT_NAME } from "./constants.js";
 import { formatDataOutputName } from "./naming.js";
 import { createTrailingOutputHelpers } from "./trailing-output.js";
@@ -38,7 +39,7 @@ export function ensureIndexOutput(node) {
     if (indexPos >= 0) {
         savedLinkIds.push(...(node.outputs[indexPos].links || []));
         for (const linkId of savedLinkIds) {
-            const link = app.graph?.links?.[linkId];
+            const link = getGraphLink(app.graph, linkId);
             if (link && link.origin_id === node.id && link.origin_slot > indexPos) {
                 link.origin_slot -= 1;
             }
@@ -49,7 +50,7 @@ export function ensureIndexOutput(node) {
     node.addOutput(INDEX_OUTPUT_NAME, "INT");
     const newPos = node.outputs.length - 1;
     for (const linkId of savedLinkIds) {
-        const link = app.graph?.links?.[linkId];
+        const link = getGraphLink(app.graph, linkId);
         if (link && link.origin_id === node.id) {
             link.origin_slot = newPos;
         }
@@ -108,7 +109,7 @@ export function addDataOutputBeforeIndex(node, num = 1, prefix = "any", nodeType
 
         const newIndexPos = node.outputs.length - 1;
         for (const linkId of savedIndexLinkIds) {
-            const link = app.graph?.links?.[linkId];
+            const link = getGraphLink(app.graph, linkId);
             if (link && link.origin_id === node.id) {
                 link.origin_slot = newIndexPos;
             }

@@ -88,3 +88,12 @@ Unpacks `combined` produced by `Combine Primitives (misc)`.
 
 - Dynamic slots are synchronized by JS extensions in `js/`.
 - For workflow compatibility, keep ComfyUI and custom nodes up to date.
+
+## JavaScript unit tests (no ComfyUI required)
+
+```bash
+npm install
+npm test
+```
+
+Tests live under `test/js/` (one file per node) and cover regression cases for workflow load / copy-paste / slot typing. Pure logic is in `js/logic/`.
