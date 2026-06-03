@@ -6,6 +6,12 @@
  */
 
 import { app } from "../../scripts/app.js";
+import { minDataOutputsForRestore, shouldSkipAnyOutputDataRemoval } from "./logic/any-output-switch-restore.js";
+import {
+    collectDataOutputSnapshot,
+    collectLinkedDataOriginSlots,
+    remapAnyOutputSwitchPastedLinks,
+} from "./utils/any-output-switch-restore.js";
 import {
     INDEX_OUTPUT_NAME,
     IoDirection,
@@ -27,6 +33,9 @@ import {
     renumberDataOutputs,
     syncSelectIndexWidget,
 } from "./utils.js";
+
+/** コピペ / ワークフロー読込直後はリンク復元前に data 出力が削除されない猶予 */
+const RESTORE_WINDOW_MS = 2500;
 
 /** Python の get_name("Any Output Switch") と同じ文字列 */
 const NODE_CLASS = "Any Output Switch (misc)";
@@ -84,19 +93,30 @@ function setupMiscAnyOutputSwitch(nodeType) {
 
         const prefix = getDataOutputNamePrefix(this.nodeType);
         ensureMinimumDataOutputs(this, MIN_DATA_OUTPUTS, prefix, this.nodeType);
+        this._miscAnyOutputRestoringUntil = 0;
+        this._miscAnyOutputCachedOutputs = null;
         this.stabilize();
         return result;
     };
 
     nodeType.prototype.onConfigure = function () {
         const result = onConfigure?.apply(this, arguments);
-        requestAnimationFrame(() => this.scheduleStabilize(0));
+        this._miscAnyOutputRestoringUntil = Date.now() + RESTORE_WINDOW_MS;
+        this._miscAnyOutputCachedOutputs = collectDataOutputSnapshot(this);
+        ensureIndexOutput(this);
+        remapAnyOutputSwitchPastedLinks(this);
+        this.stabilize();
+        scheduleAnyOutputStabilizeRetries(this);
         return result;
     };
 
     nodeType.prototype.onConnectionsChange = function (type, slotIndex, isConnected, linkInfo, ioSlot) {
         onConnectionsChange?.call(this, type, slotIndex, isConnected, linkInfo, ioSlot);
         if (app.configuringGraph) {
+            return;
+        }
+        const restoring = Date.now() < (this._miscAnyOutputRestoringUntil || 0);
+        if (restoring && type === IoDirection.OUTPUT) {
             return;
         }
         this.scheduleStabilize();
@@ -134,9 +154,22 @@ function setupMiscAnyOutputSwitch(nodeType) {
             }
         }
 
+        const restoring = Date.now() < (this._miscAnyOutputRestoringUntil || 0);
+
         ensureIndexOutput(this);
-        removeUnusedDataOutputsFromEnd(this, MIN_DATA_OUTPUTS, prefix);
-        ensureMinimumDataOutputs(this, MIN_DATA_OUTPUTS, prefix, this.nodeType);
+
+        if (!shouldSkipAnyOutputDataRemoval(restoring)) {
+            removeUnusedDataOutputsFromEnd(this, MIN_DATA_OUTPUTS, prefix);
+        }
+
+        const minData = restoring
+            ? minDataOutputsForRestore({
+                  minDefault: MIN_DATA_OUTPUTS,
+                  cachedDataCount: this._miscAnyOutputCachedOutputs?.length ?? MIN_DATA_OUTPUTS,
+                  linkedDataOriginSlots: collectLinkedDataOriginSlots(this),
+              })
+            : MIN_DATA_OUTPUTS;
+        ensureMinimumDataOutputs(this, minData, prefix, this.nodeType);
 
         // 最後のデータ出力が使用中なら 1 本増やして常に「次の差し込み口」を確保する。
         const lastDataPos = countDataOutputs(this) - 1;
@@ -166,6 +199,25 @@ function setupMiscAnyOutputSwitch(nodeType) {
         propagatePrimitiveSplitSync(this);
         this.graph?.setDirtyCanvas?.(true, false);
     };
+}
+
+/**
+ * @param {object} node
+ */
+function scheduleAnyOutputStabilizeRetries(node) {
+    node.scheduleStabilize(0);
+    requestAnimationFrame(() => {
+        if (!node.removed) {
+            node.scheduleStabilize(0);
+        }
+    });
+    for (const ms of [80, 200, 500]) {
+        setTimeout(() => {
+            if (!node.removed) {
+                node.scheduleStabilize(0);
+            }
+        }, ms);
+    }
 }
 
 app.registerExtension({
