@@ -5,25 +5,25 @@
  * @param {string} [metaType="INT"]
  */
 export function createTrailingOutputHelpers(metaName, metaType = "INT") {
-    const isMetaSlot = (node) => node.outputs[node.outputs.length - 1]?.name === metaName;
+  const isMetaSlot = (node) => node.outputs[node.outputs.length - 1]?.name === metaName;
 
-    const countDataSlots = (node) => {
-        if (!node.outputs?.length) {
-            return 0;
-        }
-        return isMetaSlot(node) ? node.outputs.length - 1 : node.outputs.length;
-    };
+  const countDataSlots = (node) => {
+    if (!node.outputs?.length) {
+      return 0;
+    }
+    return isMetaSlot(node) ? node.outputs.length - 1 : node.outputs.length;
+  };
 
-    const ensureMeta = (node) => {
-        if (!isMetaSlot(node)) {
-            node.addOutput(metaName, metaType);
-        }
-    };
+  const ensureMeta = (node) => {
+    if (!isMetaSlot(node)) {
+      node.addOutput(metaName, metaType);
+    }
+  };
 
-    const getMetaIndex = (node) => {
-        ensureMeta(node);
-        return node.outputs.length - 1;
-    };
+  const getMetaIndex = (node) => {
+    ensureMeta(node);
+    return node.outputs.length - 1;
+  };
 
-    return { isMetaSlot, countDataSlots, ensureMeta, getMetaIndex, metaName, metaType };
+  return { isMetaSlot, countDataSlots, ensureMeta, getMetaIndex, metaName, metaType };
 }

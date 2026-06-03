@@ -7,11 +7,11 @@
  * @returns {number}
  */
 export function remapInputTargetSlot(fromIndex, newIndex, targetSlot) {
-    if (targetSlot === fromIndex) {
-        return newIndex;
-    }
-    if (targetSlot > fromIndex && targetSlot <= newIndex) {
-        return targetSlot - 1;
-    }
-    return targetSlot;
+  if (targetSlot === fromIndex) {
+    return newIndex;
+  }
+  if (targetSlot > fromIndex && targetSlot <= newIndex) {
+    return targetSlot - 1;
+  }
+  return targetSlot;
 }

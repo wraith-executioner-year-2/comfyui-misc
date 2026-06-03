@@ -1,6 +1,6 @@
 import {
-    isAnySwitchPasteOrderMismatch,
-    remapPastedLinksToNamedInputs,
+  isAnySwitchPasteOrderMismatch,
+  remapPastedLinksToNamedInputs
 } from "../logic/any-switch-input-order.js";
 import { remapInputTargetSlot } from "../logic/input-slot-remap.js";
 import { getNodeGraph } from "./graph-context.js";
@@ -14,44 +14,44 @@ import { SELECT_INDEX_KEY } from "./select-index.js";
  * @returns {boolean} 並べ替えを行った
  */
 export function moveSelectIndexInputToEnd(node) {
-    const inputs = node.inputs;
-    if (!inputs?.length) {
-        return false;
-    }
-    const fromIndex = inputs.findIndex((inp) => inp.name === SELECT_INDEX_KEY);
-    if (fromIndex < 0) {
-        return false;
-    }
-    const newIndex = inputs.length - 1;
-    if (fromIndex >= newIndex) {
-        return false;
-    }
+  const inputs = node.inputs;
+  if (!inputs?.length) {
+    return false;
+  }
+  const fromIndex = inputs.findIndex((inp) => inp.name === SELECT_INDEX_KEY);
+  if (fromIndex < 0) {
+    return false;
+  }
+  const newIndex = inputs.length - 1;
+  if (fromIndex >= newIndex) {
+    return false;
+  }
 
-    const graph = getNodeGraph(node);
-    if (graph && isAnySwitchPasteOrderMismatch(inputs)) {
-        const linksToNode = [];
-        forEachGraphLink(graph, (link) => {
-            if (link.target_id === node.id) {
-                linksToNode.push(link);
-            }
-        });
-        remapPastedLinksToNamedInputs(inputs, linksToNode, node.id);
-    }
+  const graph = getNodeGraph(node);
+  if (graph && isAnySwitchPasteOrderMismatch(inputs)) {
+    const linksToNode = [];
+    forEachGraphLink(graph, (link) => {
+      if (link.target_id === node.id) {
+        linksToNode.push(link);
+      }
+    });
+    remapPastedLinksToNamedInputs(inputs, linksToNode, node.id);
+  }
 
-    const [selectInput] = inputs.splice(fromIndex, 1);
-    inputs.push(selectInput);
+  const [selectInput] = inputs.splice(fromIndex, 1);
+  inputs.push(selectInput);
 
-    if (graph) {
-        forEachGraphLink(graph, (link) => {
-            if (link.target_id !== node.id) {
-                return;
-            }
-            link.target_slot = remapInputTargetSlot(fromIndex, newIndex, link.target_slot);
-        });
-    }
+  if (graph) {
+    forEachGraphLink(graph, (link) => {
+      if (link.target_id !== node.id) {
+        return;
+      }
+      link.target_slot = remapInputTargetSlot(fromIndex, newIndex, link.target_slot);
+    });
+  }
 
-    node.onInputsOutputsParsed?.();
-    return true;
+  node.onInputsOutputsParsed?.();
+  return true;
 }
 
 /**
@@ -61,29 +61,29 @@ export function moveSelectIndexInputToEnd(node) {
  * @param {number} selectSlotIndex
  */
 export function rerouteNonIntLinkFromSelectIndex(node, selectSlotIndex) {
-    const graph = getNodeGraph(node);
-    const selectInput = node.inputs?.[selectSlotIndex];
-    if (!graph || !selectInput?.link) {
-        return;
-    }
+  const graph = getNodeGraph(node);
+  const selectInput = node.inputs?.[selectSlotIndex];
+  if (!graph || !selectInput?.link) {
+    return;
+  }
 
-    const link = getGraphLink(graph, selectInput.link);
-    if (!link) {
-        return;
-    }
+  const link = getGraphLink(graph, selectInput.link);
+  if (!link) {
+    return;
+  }
 
-    const origin = graph.getNodeById(link.origin_id);
-    const originOut = origin?.outputs?.[link.origin_slot];
-    const outType = originOut?.type;
-    if (outType == null || outType === "INT") {
-        return;
-    }
+  const origin = graph.getNodeById(link.origin_id);
+  const originOut = origin?.outputs?.[link.origin_slot];
+  const outType = originOut?.type;
+  if (outType == null || outType === "INT") {
+    return;
+  }
 
-    const anySlot = node.inputs.findIndex((inp) => inp.name?.startsWith("any_"));
-    if (anySlot < 0 || typeof origin?.connect !== "function") {
-        return;
-    }
+  const anySlot = node.inputs.findIndex((inp) => inp.name?.startsWith("any_"));
+  if (anySlot < 0 || typeof origin?.connect !== "function") {
+    return;
+  }
 
-    node.disconnectInput(selectSlotIndex, false);
-    origin.connect(link.origin_slot, node, anySlot);
+  node.disconnectInput(selectSlotIndex, false);
+  origin.connect(link.origin_slot, node, anySlot);
 }

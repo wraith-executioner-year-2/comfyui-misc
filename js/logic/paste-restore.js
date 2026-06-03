@@ -15,7 +15,7 @@ export { pickDesiredDuringSync, remapInputTargetSlot };
  * @returns {boolean}
  */
 export function shouldBlockSplitOutputRemoval(restoring, outputHasLinks) {
-    return restoring || outputHasLinks;
+  return restoring || outputHasLinks;
 }
 
 /**
@@ -28,20 +28,20 @@ export function shouldBlockSplitOutputRemoval(restoring, outputHasLinks) {
  * @param {number} params.desiredCount
  */
 export function canRemoveExcessSplitOutput({ restoring, outputHasLinks, currentCount, desiredCount }) {
-    if (currentCount <= desiredCount) {
-        return false;
-    }
-    if (shouldBlockSplitOutputRemoval(restoring, outputHasLinks)) {
-        return false;
-    }
-    return true;
+  if (currentCount <= desiredCount) {
+    return false;
+  }
+  if (shouldBlockSplitOutputRemoval(restoring, outputHasLinks)) {
+    return false;
+  }
+  return true;
 }
 
 /**
  * Split: 復元中に Combine 未確定でも combined リンクとキャッシュがあれば構成を維持する。
  */
 export function shouldHoldSplitOutputsWithoutCombine(restoring, combineNode, hasCombinedLink, cachedDesired) {
-    return Boolean(restoring && !combineNode && hasCombinedLink && cachedDesired?.length);
+  return Boolean(restoring && !combineNode && hasCombinedLink && cachedDesired?.length);
 }
 
 /**
@@ -51,7 +51,7 @@ export function shouldHoldSplitOutputsWithoutCombine(restoring, combineNode, has
  * @returns {boolean}
  */
 export function shouldBlockDataOutputRemoval(outputHasLinks) {
-    return outputHasLinks;
+  return outputHasLinks;
 }
 
 export { shouldSkipAnyOutputDataRemoval } from "./any-output-switch-restore.js";
@@ -65,10 +65,10 @@ export { shouldSkipAnyOutputDataRemoval } from "./any-output-switch-restore.js";
  * @returns {object}
  */
 export function remapOriginSlotToIndexOutput(link, nodeId, newIndexSlot) {
-    if (link?.origin_id !== nodeId) {
-        return link;
-    }
-    return { ...link, origin_slot: newIndexSlot };
+  if (link?.origin_id !== nodeId) {
+    return link;
+  }
+  return { ...link, origin_slot: newIndexSlot };
 }
 
 /**
@@ -80,10 +80,10 @@ export function remapOriginSlotToIndexOutput(link, nodeId, newIndexSlot) {
  * @returns {object}
  */
 export function decrementOriginSlotAfterOutputRemoved(link, nodeId, removedSlot) {
-    if (link?.origin_id === nodeId && link.origin_slot > removedSlot) {
-        return { ...link, origin_slot: link.origin_slot - 1 };
-    }
-    return link;
+  if (link?.origin_id === nodeId && link.origin_slot > removedSlot) {
+    return { ...link, origin_slot: link.origin_slot - 1 };
+  }
+  return link;
 }
 
 /**
@@ -97,17 +97,17 @@ export function decrementOriginSlotAfterOutputRemoved(link, nodeId, removedSlot)
  * @returns {boolean}
  */
 export function verifyInputLinksAfterSelectIndexMove(inputs, linksToNode, nodeId, fromIndex, newIndex) {
-    for (const link of linksToNode) {
-        if (link.target_id !== nodeId) {
-            continue;
-        }
-        const remapped = remapInputTargetSlot(fromIndex, newIndex, link.target_slot);
-        const slot = inputs[remapped];
-        if (!slot?.name) {
-            return false;
-        }
+  for (const link of linksToNode) {
+    if (link.target_id !== nodeId) {
+      continue;
     }
-    return true;
+    const remapped = remapInputTargetSlot(fromIndex, newIndex, link.target_slot);
+    const slot = inputs[remapped];
+    if (!slot?.name) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -120,19 +120,19 @@ export function verifyInputLinksAfterSelectIndexMove(inputs, linksToNode, nodeId
  * @returns {boolean}
  */
 export function verifyGraphLinksResolve({ inputs, outputs, links }) {
-    for (const link of Object.values(links ?? {})) {
-        if (link.target_id != null) {
-            const slot = inputs[link.target_slot];
-            if (!slot) {
-                return false;
-            }
-        }
-        if (link.origin_id != null) {
-            const out = outputs[link.origin_slot];
-            if (!out) {
-                return false;
-            }
-        }
+  for (const link of Object.values(links ?? {})) {
+    if (link.target_id != null) {
+      const slot = inputs[link.target_slot];
+      if (!slot) {
+        return false;
+      }
     }
-    return true;
+    if (link.origin_id != null) {
+      const out = outputs[link.origin_slot];
+      if (!out) {
+        return false;
+      }
+    }
+  }
+  return true;
 }

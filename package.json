@@ -4,9 +4,11 @@
   "type": "module",
   "scripts": {
     "start": "vitest watch",
-    "test": "vitest run"
+    "test": "vitest run",
+    "format": "prettier --write \"**/*.{js,json,md}\""
   },
   "devDependencies": {
+    "prettier": "^3.6.2",
     "vitest": "^3.2.4"
   }
 }

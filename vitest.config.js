@@ -7,24 +7,24 @@ const comfyAppStub = path.resolve(root, "test/stubs/comfyui-app.js");
 
 /** @type {import('vite').Plugin} */
 function resolveComfyUiApp() {
-    return {
-        name: "resolve-comfyui-app",
-        resolveId(source) {
-            if (source === "../../../scripts/app.js" || source.endsWith("/scripts/app.js")) {
-                return comfyAppStub;
-            }
-            return null;
-        },
-    };
+  return {
+    name: "resolve-comfyui-app",
+    resolveId(source) {
+      if (source === "../../../scripts/app.js" || source.endsWith("/scripts/app.js")) {
+        return comfyAppStub;
+      }
+      return null;
+    }
+  };
 }
 
 export default defineConfig({
-    plugins: [resolveComfyUiApp()],
-    test: {
-        include: ["test/js/**/*.test.js"],
-        environment: "node",
-        pool: "threads",
-        fileParallelism: true,
-        testTimeout: 5000,
-    },
+  plugins: [resolveComfyUiApp()],
+  test: {
+    include: ["test/js/**/*.test.js"],
+    environment: "node",
+    pool: "threads",
+    fileParallelism: true,
+    testTimeout: 5000
+  }
 });

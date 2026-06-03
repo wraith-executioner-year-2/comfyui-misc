@@ -8,6 +8,7 @@ ComfyUI custom nodes focused on small utility workflows.
 ## Nodes
 
 ### 1) Any Switch (misc)
+
 Selects one value from dynamic `any_01`, `any_02`, ... inputs.
 
 - **Input**
@@ -20,6 +21,7 @@ Selects one value from dynamic `any_01`, `any_02`, ... inputs.
   - `index` (`INT`): selected input index (0-based)
 
 **How to use**
+
 1. Connect multiple candidates to `any_*` inputs.
 2. Keep `select_index=-1` for auto mode, or set a number for fixed mode.
 3. Use `index` when downstream nodes need to know which branch was chosen.
@@ -27,6 +29,7 @@ Selects one value from dynamic `any_01`, `any_02`, ... inputs.
 ---
 
 ### 2) Any Output Switch (misc)
+
 Routes one input to one of dynamic outputs `any_01`, `any_02`, ...
 
 - **Input**
@@ -39,6 +42,7 @@ Routes one input to one of dynamic outputs `any_01`, `any_02`, ...
   - `index` (`INT`): selected output index (0-based)
 
 **How to use**
+
 1. Connect `input` from an upstream node.
 2. Connect each destination node to desired `any_*` outputs.
 3. Choose auto mode (`-1`) or fixed mode (`>=0`) with `select_index`.
@@ -46,6 +50,7 @@ Routes one input to one of dynamic outputs `any_01`, `any_02`, ...
 ---
 
 ### 3) Combine Primitives (misc)
+
 Combines primitive values into a single `combined` package.
 
 - **Supported primitive types**
@@ -57,6 +62,7 @@ Combines primitive values into a single `combined` package.
   - `length` (`INT`): number of packed primitive values
 
 **How to use**
+
 1. Connect primitive-producing nodes to `primitive_*` inputs.
 2. Send `combined` to `Split Primitives (misc)` or another compatible node.
 3. Use `length` for loops/validation.
@@ -64,6 +70,7 @@ Combines primitive values into a single `combined` package.
 ---
 
 ### 4) Split Primitives (misc)
+
 Unpacks `combined` produced by `Combine Primitives (misc)`.
 
 - **Input**
@@ -73,10 +80,43 @@ Unpacks `combined` produced by `Combine Primitives (misc)`.
   - `length` (`INT`)
 
 **How to use**
+
 1. Connect `combined` from `Combine Primitives (misc)` (creating Split from the `combined` output search also syncs correctly).
 2. Connect downstream primitive consumers to typed outputs such as `INT_01`.
 3. Output slots auto-sync with upstream combine connections (even through relay nodes such as `Any Switch (misc)` and `Reroute`).
 4. On workflow load / copy-paste restore, output links are preserved first and type-specific sync is applied after graph restoration settles.
+
+---
+
+### 5) ForEach (misc)
+
+Unpacks `combined` and runs downstream nodes once per primitive value (ComfyUI list execution).
+
+- **Input**
+  - `combined` (`PRIMITIVES`)
+- **Output**
+  - `*`: current element; label/type stay `*` even when connected (no type check)
+
+**How to use**
+
+1. Connect `combined` from `Combine Primitives (misc)`.
+2. Wire the `*` output through processing nodes to `End ForEach (misc)`.
+
+---
+
+### 6) End ForEach (misc)
+
+Collects per-iteration results from the loop body into `combined` again.
+
+- **Input**
+  - `value` (`*`): label/type stay `*` even when connected (no type check); usually wired from the last node in the loop body
+- **Output**
+  - `combined` (`PRIMITIVES`)
+
+**How to use**
+
+1. Connect the loop body output to `value`.
+2. Connect `combined` to `Split Primitives (misc)` (output names such as `STRING_01`, `STRING_02`, … sync from the original Combine).
 
 ## Installation
 
@@ -86,17 +126,17 @@ Unpacks `combined` produced by `Combine Primitives (misc)`.
 
 ## Notes
 
-- Dynamic slots are synchronized by JS extensions in `js/`.
-- For workflow compatibility, keep ComfyUI and custom nodes up to date.
+- Dynamic slots are synchronized in `js/` (`attachStabilizeHooks` / `stabilize`).
+- After load or copy-paste, slot removal is suppressed until links restore, then `stabilize()` trims unused sockets.
 - See [CHANGELOG.md](CHANGELOG.md) for version history.
 
-## JavaScript unit tests (no ComfyUI required)
+## Development
 
 ```bash
 npm install
-npm test
+npm test        # unit tests (no ComfyUI)
+npm run format  # Prettier (no trailing commas in JS)
 ```
 
-Tests live under `test/js/` (one file per node, plus `paste_restore.test.js` for copy-paste link restore). Pure logic is in `js/logic/`.
-
-Copy-paste and workflow load temporarily suppress dynamic slot removal so links can finish restoring before `stabilize()` trims unused sockets.
+- Tests: `test/js/` (pure logic in `js/logic/`)
+- Copy-paste restore: `test/js/paste_restore.test.js`

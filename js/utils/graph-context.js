@@ -7,8 +7,8 @@ import { app } from "../../../scripts/app.js";
  * @returns {object|null}
  */
 export function getNodeGraph(node) {
-    if (node?.graph) {
-        return node.graph;
-    }
-    return app?.canvas?.getCurrentGraph?.() ?? app?.graph ?? null;
+  if (node?.graph) {
+    return node.graph;
+  }
+  return app?.canvas?.getCurrentGraph?.() ?? app?.graph ?? null;
 }

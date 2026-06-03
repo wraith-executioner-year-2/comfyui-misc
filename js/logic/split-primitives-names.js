@@ -7,20 +7,14 @@
  * @returns {string}
  */
 export function typeNameForPrimitiveSlotType(type) {
-    if (Array.isArray(type)) {
-        return "COMBO";
-    }
-    const text = String(type ?? "").trim();
-    if (
-        text === "INT" ||
-        text === "FLOAT" ||
-        text === "STRING" ||
-        text === "BOOLEAN" ||
-        text === "COMBO"
-    ) {
-        return text;
-    }
-    return "PRIMITIVE";
+  if (Array.isArray(type)) {
+    return "COMBO";
+  }
+  const text = String(type ?? "").trim();
+  if (text === "INT" || text === "FLOAT" || text === "STRING" || text === "BOOLEAN" || text === "COMBO") {
+    return text;
+  }
+  return "PRIMITIVE";
 }
 
 /**
@@ -29,8 +23,8 @@ export function typeNameForPrimitiveSlotType(type) {
  * @returns {string}
  */
 export function formatTypedOutputName(type, index0) {
-    const typeName = typeNameForPrimitiveSlotType(type);
-    return `${typeName}_${String(index0 + 1).padStart(2, "0")}`;
+  const typeName = typeNameForPrimitiveSlotType(type);
+  return `${typeName}_${String(index0 + 1).padStart(2, "0")}`;
 }
 
 /**
@@ -40,20 +34,20 @@ export function formatTypedOutputName(type, index0) {
  * @returns {Array<{ name: string, type: string }>}
  */
 export function listLinkedPrimitiveInputs(inputs) {
-    const desired = [];
-    for (const inp of inputs ?? []) {
-        if (!inp?.name?.startsWith("primitive_")) {
-            continue;
-        }
-        if (!inp.link) {
-            continue;
-        }
-        desired.push({
-            name: inp.name,
-            type: inp.type ?? "INT,FLOAT,STRING,BOOLEAN,COMBO",
-        });
+  const desired = [];
+  for (const inp of inputs ?? []) {
+    if (!inp?.name?.startsWith("primitive_")) {
+      continue;
     }
-    return desired;
+    if (!inp.link) {
+      continue;
+    }
+    desired.push({
+      name: inp.name,
+      type: inp.type ?? "INT,FLOAT,STRING,BOOLEAN,COMBO"
+    });
+  }
+  return desired;
 }
 
 /**
@@ -62,14 +56,14 @@ export function listLinkedPrimitiveInputs(inputs) {
  * @returns {Array<{ name: string, type: string }>}
  */
 export function resolveDesiredPrimitiveSlots(stored, linked) {
-    // 実際に刺さっている入力（linked）を優先。stored だけだと未接続スロットが混ざることがある
-    if (linked.length > 0) {
-        return linked.map((s) => ({ name: s.name, type: s.type }));
-    }
-    if (stored?.length) {
-        return stored.map((s) => ({ name: s.name, type: s.type }));
-    }
-    return [{ name: "primitive_01", type: "INT,FLOAT,STRING,BOOLEAN,COMBO" }];
+  // 実際に刺さっている入力（linked）を優先。stored だけだと未接続スロットが混ざることがある
+  if (linked.length > 0) {
+    return linked.map((s) => ({ name: s.name, type: s.type }));
+  }
+  if (stored?.length) {
+    return stored.map((s) => ({ name: s.name, type: s.type }));
+  }
+  return [{ name: "primitive_01", type: "INT,FLOAT,STRING,BOOLEAN,COMBO" }];
 }
 
 /**
@@ -84,18 +78,18 @@ export function resolveDesiredPrimitiveSlots(stored, linked) {
  * @param {Array<{ name: string, type: string }>|null} params.stored
  */
 export function pickDesiredDuringSync({
-    restoring,
-    combineNode,
-    hasCombinedLink,
-    cachedDesired,
-    linked,
-    stored,
+  restoring,
+  combineNode,
+  hasCombinedLink,
+  cachedDesired,
+  linked,
+  stored
 }) {
-    if (!combineNode && hasCombinedLink && restoring && cachedDesired?.length) {
-        return cachedDesired;
-    }
-    if (combineNode) {
-        return resolveDesiredPrimitiveSlots(stored, linked);
-    }
-    return [{ name: "primitive_01", type: "INT,FLOAT,STRING,BOOLEAN,COMBO" }];
+  if (!combineNode && hasCombinedLink && restoring && cachedDesired?.length) {
+    return cachedDesired;
+  }
+  if (combineNode) {
+    return resolveDesiredPrimitiveSlots(stored, linked);
+  }
+  return [{ name: "primitive_01", type: "INT,FLOAT,STRING,BOOLEAN,COMBO" }];
 }

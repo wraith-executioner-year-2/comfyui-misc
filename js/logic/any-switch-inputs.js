@@ -10,11 +10,11 @@ export const ANY_SWITCH_DATA_OUTPUT_SLOT = 0;
  * @returns {number|null} 1始まりの any_XX 番号
  */
 export function parseAnyInputIndex(name) {
-    const match = /^any_(\d+)$/.exec(name ?? "");
-    if (!match) {
-        return null;
-    }
-    return Number.parseInt(match[1], 10);
+  const match = /^any_(\d+)$/.exec(name ?? "");
+  if (!match) {
+    return null;
+  }
+  return Number.parseInt(match[1], 10);
 }
 
 /**
@@ -25,21 +25,21 @@ export function parseAnyInputIndex(name) {
  * @returns {number}
  */
 export function getDesiredAnyInputCount(inputs, minCount = 1) {
-    let maxConnectedIndex = 0;
+  let maxConnectedIndex = 0;
 
-    for (const input of inputs ?? []) {
-        const index = parseAnyInputIndex(input?.name);
-        if (index == null) {
-            continue;
-        }
-        if (input.link != null && index > maxConnectedIndex) {
-            maxConnectedIndex = index;
-        }
+  for (const input of inputs ?? []) {
+    const index = parseAnyInputIndex(input?.name);
+    if (index == null) {
+      continue;
     }
-
-    if (maxConnectedIndex === 0) {
-        return minCount;
+    if (input.link != null && index > maxConnectedIndex) {
+      maxConnectedIndex = index;
     }
+  }
 
-    return Math.max(minCount, maxConnectedIndex + 1);
+  if (maxConnectedIndex === 0) {
+    return minCount;
+  }
+
+  return Math.max(minCount, maxConnectedIndex + 1);
 }

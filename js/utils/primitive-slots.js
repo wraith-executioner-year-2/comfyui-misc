@@ -14,11 +14,11 @@ export const ensureLengthOutput = lengthTrailing.ensureMeta;
  * Split 専用ヘルパ（desired計算/切断/同期）はここから削除しました。
  */
 export function addPrimitiveInputs(node, num = 1, slotType = PRIMITIVE_SLOT_TYPE) {
-    const primitiveInputs = node.inputs.filter((inp) => inp.name?.startsWith("primitive_"));
-    let nextIndex = primitiveInputs.length + 1;
+  const primitiveInputs = node.inputs.filter((inp) => inp.name?.startsWith("primitive_"));
+  let nextIndex = primitiveInputs.length + 1;
 
-    for (let i = 0; i < num; i++) {
-        node.addInput(`primitive_${String(nextIndex).padStart(2, "0")}`, slotType);
-        nextIndex += 1;
-    }
+  for (let i = 0; i < num; i++) {
+    node.addInput(`primitive_${String(nextIndex).padStart(2, "0")}`, slotType);
+    nextIndex += 1;
+  }
 }

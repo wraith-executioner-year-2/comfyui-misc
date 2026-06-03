@@ -4,17 +4,17 @@
  */
 
 export const app = {
-    graph: {
-        links: new Map(),
-    },
-    canvas: {
-        getCurrentGraph() {
-            return {
-                getNodeById() {
-                    return null;
-                },
-            };
-        },
-    },
-    configuringGraph: false,
+  graph: {
+    links: new Map()
+  },
+  canvas: {
+    getCurrentGraph() {
+      return {
+        getNodeById() {
+          return null;
+        }
+      };
+    }
+  },
+  configuringGraph: false
 };
