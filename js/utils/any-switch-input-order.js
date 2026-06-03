@@ -1,3 +1,7 @@
+import {
+    isAnySwitchPasteOrderMismatch,
+    remapPastedLinksToNamedInputs,
+} from "../logic/any-switch-input-order.js";
 import { remapInputTargetSlot } from "../logic/input-slot-remap.js";
 import { getNodeGraph } from "./graph-context.js";
 import { forEachGraphLink, getGraphLink } from "./graph-links.js";
@@ -23,10 +27,20 @@ export function moveSelectIndexInputToEnd(node) {
         return false;
     }
 
+    const graph = getNodeGraph(node);
+    if (graph && isAnySwitchPasteOrderMismatch(inputs)) {
+        const linksToNode = [];
+        forEachGraphLink(graph, (link) => {
+            if (link.target_id === node.id) {
+                linksToNode.push(link);
+            }
+        });
+        remapPastedLinksToNamedInputs(inputs, linksToNode, node.id);
+    }
+
     const [selectInput] = inputs.splice(fromIndex, 1);
     inputs.push(selectInput);
 
-    const graph = getNodeGraph(node);
     if (graph) {
         forEachGraphLink(graph, (link) => {
             if (link.target_id !== node.id) {

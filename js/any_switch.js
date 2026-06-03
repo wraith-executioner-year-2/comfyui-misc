@@ -9,7 +9,6 @@ import {
     debounce,
     followConnectionUntilType,
     propagatePrimitiveSplitSync,
-    removeUnusedInputsFromEnd,
     slotLabelForLinkType,
     syncSelectIndexWidget,
 } from "./utils.js";
@@ -17,6 +16,10 @@ import {
     moveSelectIndexInputToEnd,
     rerouteNonIntLinkFromSelectIndex,
 } from "./utils/any-switch-input-order.js";
+import {
+    ANY_SWITCH_DATA_OUTPUT_SLOT,
+    getDesiredAnyInputCount,
+} from "./logic/any-switch-inputs.js";
 
 /** Python の get_name("Any Switch") と同じ文字列 */
 const NODE_CLASS = "Any Switch (misc)";
@@ -61,6 +64,7 @@ function applyOutputLabels(output, nodeType, connectedType) {
 function setupMiscAnySwitch(nodeType) {
     const onNodeCreated = nodeType.prototype.onNodeCreated;
     const onConnectionsChange = nodeType.prototype.onConnectionsChange;
+    const onConfigure = nodeType.prototype.onConfigure;
 
     /**
      * ノードがキャンバスに置かれたとき。
@@ -80,6 +84,13 @@ function setupMiscAnySwitch(nodeType) {
         moveSelectIndexInputToEnd(this);
         // 検索からの自動接続直後に型を揃える（debounce 前に PRIMITIVES 等を反映）
         this.stabilize();
+        return result;
+    };
+
+    nodeType.prototype.onConfigure = function () {
+        const result = onConfigure?.apply(this, arguments);
+        moveSelectIndexInputToEnd(this);
+        this.scheduleStabilize();
         return result;
     };
 
@@ -127,13 +138,31 @@ function setupMiscAnySwitch(nodeType) {
     };
 
     /**
-     * 未使用スロットの削除・1本追加・型の同期をまとめて行う。
+     * any_* を「最後に接続されている any_XX + 1」本に揃える。
+     */
+    nodeType.prototype.syncAnyInputCount = function () {
+        const desired = getDesiredAnyInputCount(this.inputs, MIN_ANY_INPUTS);
+
+        while (countAnySwitchInputs(this) > desired) {
+            for (let i = this.inputs.length - 1; i >= 0; i--) {
+                if (this.inputs[i]?.name?.startsWith("any_")) {
+                    this.removeInput(i);
+                    break;
+                }
+            }
+        }
+
+        while (countAnySwitchInputs(this) < desired) {
+            this.addAnyInput(1);
+        }
+    };
+
+    /**
+     * 未使用スロットの整理・型の同期をまとめて行う。
      */
     nodeType.prototype.stabilize = function () {
-        // 末尾の未使用 any_* を整理しつつ、最低 1 本の入力は常に残す。
-        removeUnusedInputsFromEnd(this, Math.max(1, MIN_ANY_INPUTS - 1), /^any_/);
-        this.addAnyInput();
         moveSelectIndexInputToEnd(this);
+        this.syncAnyInputCount();
 
         let connectedType = null;
         for (let i = 0; i < this.inputs.length; i++) {
@@ -147,7 +176,12 @@ function setupMiscAnySwitch(nodeType) {
             }
         }
         if (!connectedType) {
-            connectedType = followConnectionUntilType(this, IoDirection.OUTPUT, undefined, true);
+            connectedType = followConnectionUntilType(
+                this,
+                IoDirection.OUTPUT,
+                ANY_SWITCH_DATA_OUTPUT_SLOT,
+                true,
+            );
         }
 
         this.nodeType = connectedType?.type || "*";
@@ -159,9 +193,7 @@ function setupMiscAnySwitch(nodeType) {
             if (input.name?.startsWith("any_")) {
                 input.type = this.nodeType;
                 const label = slotLabelForLinkType(this.nodeType);
-                if (label) {
-                    input.label = label;
-                }
+                input.label = label ?? input.name;
             }
         }
         for (let i = 0; i < this.outputs.length; i++) {

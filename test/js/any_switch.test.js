@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import {
+    ANY_SWITCH_DATA_OUTPUT_SLOT,
+    getDesiredAnyInputCount,
+} from "../../js/logic/any-switch-inputs.js";
 import { computeSelectIndexMax } from "../../js/logic/select-index-bounds.js";
 import { miscSlotTypesConnect } from "../../js/logic/litegraph-type-compat.js";
 import { countAnySwitchInputs, SELECT_INDEX_KEY } from "../../js/utils/select-index.js";
@@ -24,6 +28,48 @@ describe("any_switch", () => {
 
         it("any_* が1本だけのとき max は -1", () => {
             expect(computeSelectIndexMax(1)).toBe(-1);
+        });
+    });
+
+    describe("ANY_SWITCH_DATA_OUTPUT_SLOT", () => {
+        it("index 出力（スロット1）ではなく * 出力（スロット0）だけ型解決に使う", () => {
+            expect(ANY_SWITCH_DATA_OUTPUT_SLOT).toBe(0);
+        });
+    });
+
+    describe("getDesiredAnyInputCount", () => {
+        it("未接続なら any_01 のみ", () => {
+            expect(
+                getDesiredAnyInputCount([
+                    { name: "any_01" },
+                    { name: "any_02" },
+                    { name: "any_03" },
+                ]),
+            ).toBe(1);
+        });
+
+        it("any_02 まで接続なら any_03 まで（3本）", () => {
+            expect(
+                getDesiredAnyInputCount([
+                    { name: "any_01", link: 1 },
+                    { name: "any_02", link: 2 },
+                    { name: "any_03" },
+                ]),
+            ).toBe(3);
+        });
+
+        it("any_01 のみ接続なら any_02 まで（2本）", () => {
+            expect(getDesiredAnyInputCount([{ name: "any_01", link: 1 }])).toBe(2);
+        });
+
+        it("any_03 だけ接続でも any_04 まで（4本）", () => {
+            expect(
+                getDesiredAnyInputCount([
+                    { name: "any_01" },
+                    { name: "any_02" },
+                    { name: "any_03", link: 3 },
+                ]),
+            ).toBe(4);
         });
     });
 
