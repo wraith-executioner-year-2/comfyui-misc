@@ -1,7 +1,5 @@
 # Changelog
 
-コミット一覧: [wraith-executioner-year-2/comfyui-misc](https://github.com/wraith-executioner-year-2/comfyui-misc)
-
 ## v0.0.3
 
 ### [`1054bec`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/1054bec) — :bug: Split Primitives が Combine と同期されず出力が空になる問題を修正
