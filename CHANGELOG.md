@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.0.4
+
+### [`e978159`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/e978159) — :bug: Any Switch の any_* 本数・コピペ復元・index 接続時の型
+
+- 接続済みの最後の `any_*` + 1 本だけに入力を揃え、未使用スロットの増え続けを防止
+- コピペ直後に `select_index` が先頭にあるとき、`any_*` への `target_slot` を名前基準で付け直し
+- 型解決はデータ出力（スロット 0）のみを参照し、`index` 出力だけ接続しても `*` のまま維持
+
+### [`f4e5459`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/f4e5459) — :bug: Any Output Switch のコピペで 2 本目 data 出力の接続が復元されない問題
+
+- 復元猶予中はリンク未復元の data 出力を `removeOutput` しない
+- ペースト時の出力構成をキャッシュし、`IMAGE_02` など複数 data 出力の `origin_slot` を維持
+- `index` スロット位置のずれ時は `origin_slot` をスロット名基準で再マップ
+
+### [`8bb3e91`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/8bb3e91) — :wrench: コピペ復元の共有ロジックテストを追加
+
+- `js/logic/paste-restore.js` と `test/js/paste_restore.test.js` で 4 ノードの復元ケースを検証
+- Split の重複テストを `paste_restore.test.js` に集約
+
 ## v0.0.3
 
 ### [`1054bec`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/1054bec) — :bug: Split Primitives が Combine と同期されず出力が空になる問題を修正
