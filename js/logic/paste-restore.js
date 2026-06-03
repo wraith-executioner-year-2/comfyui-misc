@@ -14,8 +14,8 @@ export { pickDesiredDuringSync, remapInputTargetSlot };
  * @param {boolean} outputHasLinks
  * @returns {boolean}
  */
-export function shouldBlockSplitOutputRemoval(restoreing, outputHasLinks) {
-    return restoreing || outputHasLinks;
+export function shouldBlockSplitOutputRemoval(restoring, outputHasLinks) {
+    return restoring || outputHasLinks;
 }
 
 /**
@@ -40,8 +40,8 @@ export function canRemoveExcessSplitOutput({ restoring, outputHasLinks, currentC
 /**
  * Split: 復元中に Combine 未確定でも combined リンクとキャッシュがあれば構成を維持する。
  */
-export function shouldHoldSplitOutputsWithoutCombine(restoreing, combineNode, hasCombinedLink, cachedDesired) {
-    return Boolean(restoreing && !combineNode && hasCombinedLink && cachedDesired?.length);
+export function shouldHoldSplitOutputsWithoutCombine(restoring, combineNode, hasCombinedLink, cachedDesired) {
+    return Boolean(restoring && !combineNode && hasCombinedLink && cachedDesired?.length);
 }
 
 /**

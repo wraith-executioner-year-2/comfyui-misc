@@ -5,6 +5,19 @@
 export const INDEX_OUTPUT_NAME = "index";
 
 /**
+ * @param {Array<{ name?: string }>} outputs
+ * @returns {number}
+ */
+function findTrailingIndexPos(outputs) {
+    for (let i = (outputs ?? []).length - 1; i >= 0; i--) {
+        if (outputs[i]?.name === INDEX_OUTPUT_NAME) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/**
  * data 出力スロットの配列 index（末尾 index のみ除外。途中に index があるコピペずれにも対応）。
  *
  * @param {Array<{ name?: string }>} outputs
@@ -33,12 +46,7 @@ export function listDataOutputSlotIndices(outputs) {
  */
 export function remapSerializedOriginSlotToOutputIndex(serializedSlot, outputs) {
     const dataIndices = listDataOutputSlotIndices(outputs);
-    const list = outputs ?? [];
-    const indexPos = list.findLastIndex?.((o) => o?.name === INDEX_OUTPUT_NAME);
-    const trailingIndexPos =
-        indexPos >= 0
-            ? indexPos
-            : list.findIndex((o) => o?.name === INDEX_OUTPUT_NAME);
+    const trailingIndexPos = findTrailingIndexPos(outputs);
 
     if (serializedSlot >= 0 && serializedSlot < dataIndices.length) {
         return dataIndices[serializedSlot];
