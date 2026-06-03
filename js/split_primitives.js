@@ -5,6 +5,7 @@
 
 import { app } from "../../scripts/app.js";
 import {
+    PRIMITIVES_TYPE,
     syncPrimitivesLinkSlot,
     COMBINE_PRIMITIVES_NODE_CLASS,
     IoDirection,
@@ -177,13 +178,39 @@ function listLinkedWithResolvedTypes(combineNode) {
     return linked;
 }
 
+function getCombinedInput(splitNode) {
+    return splitNode.inputs?.find((inp) => inp.name === "combined");
+}
+
+function scheduleSplitStabilizeRetries(splitNode) {
+    splitNode.scheduleStabilize(0);
+    requestAnimationFrame(() => {
+        if (!splitNode.removed) {
+            splitNode.scheduleStabilize(0);
+        }
+    });
+    setTimeout(() => {
+        if (!splitNode.removed) {
+            splitNode.scheduleStabilize(0);
+        }
+    }, 80);
+}
+
 function syncSplitFromCombine(splitNode, combineNode) {
     ensureLengthOutput(splitNode);
 
     // 復元/コピペ直後の短時間は削除を抑止（コピー＆ペースト復元途中で既存ソケットが消える事故を防ぐ）
     const restoring = Date.now() < (splitNode._miscSplitRestoringUntil || 0);
-    const combinedInput = splitNode.inputs?.find((inp) => inp.name === "combined");
+    const combinedInput = getCombinedInput(splitNode);
     const hasCombinedLink = !!combinedInput?.link;
+
+    // 検索から新規作成した直後は combined リンクだけ先にでき、Combine 走査が1フレーム遅れる
+    if (!restoring && !combineNode && hasCombinedLink) {
+        ensurePrimitiveOutputsCount(splitNode, 1, PRIMITIVE_SLOT_TYPE);
+        normalizeLengthOutput(splitNode);
+        ensureSplitOutputLabels(splitNode);
+        return;
+    }
 
     // 復元中に Combine がまだ辿れない瞬間がある（リンク復元順の都合）。
     // その瞬間にフォールバック出力へ上書きすると、保存済みの INT,FLOAT が崩れるため、
@@ -278,9 +305,9 @@ function setupSplitPrimitives(nodeType) {
         this._miscSplitCachedOutputs = null;
         this._miscSplitCachedDesired = null;
 
-        syncPrimitivesLinkSlot(this.inputs[0]);
-        // 新規作成直後にも 1 回同期しておく
-        requestAnimationFrame(() => this.scheduleStabilize(0));
+        syncPrimitivesLinkSlot(getCombinedInput(this));
+        this.stabilize();
+        scheduleSplitStabilizeRetries(this);
         return result;
     };
 
@@ -329,6 +356,16 @@ function setupSplitPrimitives(nodeType) {
         if (!this._miscSplitGraphReady) {
             return;
         }
+
+        const slot = ioSlot ?? this.inputs?.[slotIndex];
+        if (type === IoDirection.INPUT && isConnected && slot?.name === "combined") {
+            const combineNode = findLinkedCombineNode(this, COMBINE_NODE_CLASS);
+            combineNode?.stabilize?.();
+            this.stabilize();
+            scheduleSplitStabilizeRetries(this);
+            return;
+        }
+
         this.scheduleStabilize();
     };
 
@@ -355,7 +392,7 @@ function setupSplitPrimitives(nodeType) {
             return;
         }
 
-        syncPrimitivesLinkSlot(this.inputs[0]);
+        syncPrimitivesLinkSlot(getCombinedInput(this));
 
         const combineNode = findLinkedCombineNode(this, COMBINE_NODE_CLASS);
         const restoring = Date.now() < (this._miscSplitRestoringUntil || 0);

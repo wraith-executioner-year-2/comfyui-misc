@@ -62,11 +62,12 @@ export function listLinkedPrimitiveInputs(inputs) {
  * @returns {Array<{ name: string, type: string }>}
  */
 export function resolveDesiredPrimitiveSlots(stored, linked) {
+    // 実際に刺さっている入力（linked）を優先。stored だけだと未接続スロットが混ざることがある
+    if (linked.length > 0) {
+        return linked.map((s) => ({ name: s.name, type: s.type }));
+    }
     if (stored?.length) {
         return stored.map((s) => ({ name: s.name, type: s.type }));
-    }
-    if (linked.length > 0) {
-        return linked;
     }
     return [{ name: "primitive_01", type: "INT,FLOAT,STRING,BOOLEAN,COMBO" }];
 }

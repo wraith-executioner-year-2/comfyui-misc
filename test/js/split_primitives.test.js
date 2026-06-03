@@ -34,6 +34,17 @@ describe("split_primitives", () => {
             expect(desired[1].type).toBe("FLOAT");
         });
 
+        it("linked を stored より優先（未接続の primitive_02 が stored にあっても1本）", () => {
+            const stored = [
+                { name: "primitive_01", type: "INT" },
+                { name: "primitive_02", type: "FLOAT" },
+            ];
+            const linked = [{ name: "primitive_01", type: "INT" }];
+            const desired = resolveDesiredPrimitiveSlots(stored, linked);
+            expect(desired).toHaveLength(1);
+            expect(desired[0].type).toBe("INT");
+        });
+
         it("接続済みのみ列挙し未接続の primitive_03 は含めない", () => {
             const inputs = [
                 { name: "primitive_01", type: "INT", link: 1 },
@@ -63,16 +74,20 @@ describe("split_primitives", () => {
             expect(picked).toEqual(cached);
         });
 
-        it("通常時は stored を優先", () => {
-            const stored = [{ name: "primitive_01", type: "INT" }];
+        it("通常時は接続済み linked を stored より優先", () => {
+            const stored = [
+                { name: "primitive_01", type: "INT" },
+                { name: "primitive_02", type: "FLOAT" },
+            ];
             const picked = pickDesiredDuringSync({
                 restoring: false,
                 combineNode: {},
                 hasCombinedLink: true,
-                cachedDesired: [{ name: "INT_01", type: "INT" }],
-                linked: [],
+                cachedDesired: null,
+                linked: [{ name: "primitive_01", type: "INT" }],
                 stored,
             });
+            expect(picked).toHaveLength(1);
             expect(picked[0].type).toBe("INT");
         });
     });

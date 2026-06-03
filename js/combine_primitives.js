@@ -42,6 +42,7 @@ function setupCombinePrimitives(nodeType) {
         if (!this.inputs.some((inp) => PRIMITIVE_NAME_RE.test(inp.name ?? ""))) {
             addPrimitiveInputs(this, MIN_PRIMITIVE_INPUTS);
         }
+        this.stabilize();
         return result;
     };
 
