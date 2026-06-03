@@ -1,0 +1,30 @@
+---
+description: Vitest・paste_restore テスト方針
+globs: "test/**"
+alwaysApply: false
+---
+
+# テスト
+
+```bash
+npm install
+npm test    # vitest run
+```
+
+ComfyUI 不要。`test/stubs/comfyui-app.js` が `scripts/app.js` をスタブ。
+
+## 配置
+
+- ノード別: `test/js/<feature>.test.js`
+- コピペ復元横断: `test/js/paste_restore.test.js`（6 ノードすべて）
+- 純粋ロジック: `js/logic/*.js` を直接 import（`../../js/logic/...`）
+
+## 方針
+
+- ComfyUI 非依存の判定は **`js/logic/`** に置き、JS 拡張は薄く保つ
+- 回帰が価値ある挙動だけテスト（自明な assert は増やさない）
+- 新ノード追加時は logic テスト + 必要なら `paste_restore.test.js` の `MISC_NODES` 更新
+
+## Python スモーク
+
+実行環境に ComfyUI が無いと `comfy_execution` は import 不可。ロジック検証は JS 側で行う。

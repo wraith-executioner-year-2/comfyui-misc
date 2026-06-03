@@ -135,7 +135,7 @@
 ```bash
 npm install
 npm test      # 単体テスト（ComfyUI 不要）
-npm run format  # Prettier（JS は trailing comma なし）
+npm run format  # Prettier（JS のみ、trailing comma なし）
 ```
 
 - テスト: `test/js/`（純粋ロジックは `js/logic/`）

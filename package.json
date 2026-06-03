@@ -5,7 +5,7 @@
   "scripts": {
     "start": "vitest watch",
     "test": "vitest run",
-    "format": "prettier --write \"**/*.{js,json,md}\""
+    "format": "prettier --write \"**/*.js\""
   },
   "devDependencies": {
     "prettier": "^3.6.2",

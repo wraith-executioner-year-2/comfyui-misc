@@ -135,7 +135,7 @@ Collects per-iteration results from the loop body into `combined` again.
 ```bash
 npm install
 npm test        # unit tests (no ComfyUI)
-npm run format  # Prettier (no trailing commas in JS)
+npm run format  # Prettier (JS only, no trailing commas)
 ```
 
 - Tests: `test/js/` (pure logic in `js/logic/`)
