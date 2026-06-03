@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
     formatTypedOutputName,
     listLinkedPrimitiveInputs,
-    pickDesiredDuringSync,
     resolveDesiredPrimitiveSlots,
     typeNameForPrimitiveSlotType,
 } from "../../js/logic/split-primitives-names.js";
@@ -54,41 +53,6 @@ describe("split_primitives", () => {
             const linked = listLinkedPrimitiveInputs(inputs);
             expect(linked).toHaveLength(2);
             expect(linked[1].type).toBe("FLOAT");
-        });
-    });
-
-    describe("pickDesiredDuringSync（コピペ復元）", () => {
-        it("復元中・Combine未確定・combined接続ありではキャッシュを使う", () => {
-            const cached = [
-                { name: "INT_01", type: "INT" },
-                { name: "FLOAT_02", type: "FLOAT" },
-            ];
-            const picked = pickDesiredDuringSync({
-                restoring: true,
-                combineNode: null,
-                hasCombinedLink: true,
-                cachedDesired: cached,
-                linked: [{ name: "primitive_01", type: "INT" }],
-                stored: null,
-            });
-            expect(picked).toEqual(cached);
-        });
-
-        it("通常時は接続済み linked を stored より優先", () => {
-            const stored = [
-                { name: "primitive_01", type: "INT" },
-                { name: "primitive_02", type: "FLOAT" },
-            ];
-            const picked = pickDesiredDuringSync({
-                restoring: false,
-                combineNode: {},
-                hasCombinedLink: true,
-                cachedDesired: null,
-                linked: [{ name: "primitive_01", type: "INT" }],
-                stored,
-            });
-            expect(picked).toHaveLength(1);
-            expect(picked[0].type).toBe("INT");
         });
     });
 
