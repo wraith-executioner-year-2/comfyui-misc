@@ -3,7 +3,7 @@
   "title": "ComfyUI Misc Utilities",
   "description": "Utility switch and primitive packing nodes for ComfyUI.",
   "author": "wraith-executioner-year-2",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "repository": "",
   "tags": [
     "utility",
