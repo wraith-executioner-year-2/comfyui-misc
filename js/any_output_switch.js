@@ -7,11 +7,13 @@
 
 import { app } from "../../scripts/app.js";
 import { minDataOutputsForRestore, shouldSkipAnyOutputDataRemoval } from "./logic/any-output-switch-restore.js";
+import { MISC_GRAPH_RESTORE_WINDOW_MS } from "./logic/restore-window.js";
 import {
     collectDataOutputSnapshot,
     collectLinkedDataOriginSlots,
     remapAnyOutputSwitchPastedLinks,
 } from "./utils/any-output-switch-restore.js";
+import { scheduleStabilizeRetries } from "./utils/stabilize-retries.js";
 import {
     INDEX_OUTPUT_NAME,
     IoDirection,
@@ -33,9 +35,6 @@ import {
     renumberDataOutputs,
     syncSelectIndexWidget,
 } from "./utils.js";
-
-/** コピペ / ワークフロー読込直後はリンク復元前に data 出力が削除されない猶予 */
-const RESTORE_WINDOW_MS = 2500;
 
 /** Python の get_name("Any Output Switch") と同じ文字列 */
 const NODE_CLASS = "Any Output Switch (misc)";
@@ -101,12 +100,12 @@ function setupMiscAnyOutputSwitch(nodeType) {
 
     nodeType.prototype.onConfigure = function () {
         const result = onConfigure?.apply(this, arguments);
-        this._miscAnyOutputRestoringUntil = Date.now() + RESTORE_WINDOW_MS;
+        this._miscAnyOutputRestoringUntil = Date.now() + MISC_GRAPH_RESTORE_WINDOW_MS;
         this._miscAnyOutputCachedOutputs = collectDataOutputSnapshot(this);
         ensureIndexOutput(this);
         remapAnyOutputSwitchPastedLinks(this);
         this.stabilize();
-        scheduleAnyOutputStabilizeRetries(this);
+        scheduleStabilizeRetries(this);
         return result;
     };
 
@@ -199,25 +198,6 @@ function setupMiscAnyOutputSwitch(nodeType) {
         propagatePrimitiveSplitSync(this);
         this.graph?.setDirtyCanvas?.(true, false);
     };
-}
-
-/**
- * @param {object} node
- */
-function scheduleAnyOutputStabilizeRetries(node) {
-    node.scheduleStabilize(0);
-    requestAnimationFrame(() => {
-        if (!node.removed) {
-            node.scheduleStabilize(0);
-        }
-    });
-    for (const ms of [80, 200, 500]) {
-        setTimeout(() => {
-            if (!node.removed) {
-                node.scheduleStabilize(0);
-            }
-        }, ms);
-    }
 }
 
 app.registerExtension({

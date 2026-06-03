@@ -29,6 +29,7 @@ import {
     pickDesiredDuringSync,
     resolveDesiredPrimitiveSlots,
 } from "./logic/split-primitives-names.js";
+import { MISC_GRAPH_RESTORE_WINDOW_MS } from "./logic/restore-window.js";
 
 const NODE_CLASS = SPLIT_PRIMITIVES_NODE_CLASS;
 const COMBINE_NODE_CLASS = COMBINE_PRIMITIVES_NODE_CLASS;
@@ -39,9 +40,6 @@ const lengthTrailing = createTrailingOutputHelpers(LENGTH_OUTPUT_NAME);
 const countPrimitiveDataOutputs = lengthTrailing.countDataSlots;
 const ensureLengthOutput = lengthTrailing.ensureMeta;
 const isLengthOutputSlot = lengthTrailing.isMetaSlot;
-
-// ワークフロー読込 / まとめてコピペ後の「リンク復元揺れ」を吸収する猶予
-const RESTORE_WINDOW_MS = 2500;
 
 /**
  * Reroute 等、個別拡張を持たないリレーノードの配線変更を Split へ伝播する。
@@ -316,7 +314,7 @@ function setupSplitPrimitives(nodeType) {
         this._miscSplitGraphReady = true;
 
         // 復元/コピペ直後の短時間だけ縮小や切断リスクを下げる
-        this._miscSplitRestoringUntil = Date.now() + RESTORE_WINDOW_MS;
+        this._miscSplitRestoringUntil = Date.now() + MISC_GRAPH_RESTORE_WINDOW_MS;
         // 仕様⑥: 復元時点の出力構成をキャッシュして、先にソケット本数を確保する
         this._miscSplitCachedOutputs = collectExistingOutputSnapshot(this);
         this._miscSplitCachedDesired = this._miscSplitCachedOutputs
