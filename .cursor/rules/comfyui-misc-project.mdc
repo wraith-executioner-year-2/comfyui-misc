@@ -1,0 +1,45 @@
+---
+description: comfyui-misc プロジェクト全体の方針・構成・リリース運用
+alwaysApply: true
+---
+
+# comfyui-misc プロジェクト
+
+ComfyUI 用カスタムノード群。キャンバスカテゴリは `misc`。リポジトリ: https://github.com/wraith-executioner-year-2/comfyui-misc
+
+## ノード一覧
+
+| ノード | 役割 |
+|--------|------|
+| Any Switch (misc) | 可変 `any_*` 入力から1本選択 |
+| Any Output Switch (misc) | 1入力を可変 `any_*` 出力へ分配 |
+| Combine / Split Primitives (misc) | プリミティブの `combined` (PRIMITIVES) パック/アンパック |
+| ForEach / End ForEach (misc) | `combined` を要素ごとにループ実行し再結合 |
+
+## ディレクトリ
+
+- `*.py` — バックエンド（`__init__.py` で `NODE_CLASS_MAPPINGS` 登録）
+- `utils/` — Python 共通（型・`pack_combined_primitives` 等）
+- `js/` — フロントエンド拡張（ComfyUI が `WEB_DIRECTORY = "./js"` で読み込む）
+- `js/logic/` — ComfyUI 非依存の純粋ロジック（Vitest 対象）
+- `js/utils/` — グラフ走査・スロット同期・debounce 等
+- `test/js/` — 単体テスト
+
+## 言語方針
+
+- **フロントエンドは JavaScript のみ**（TypeScript への全面移行は保守性・ファイル数の理由で採用しない）
+- 新規ロジックは可能なら `js/logic/` に切り出し、ノード JS から import
+
+## バージョン・ドキュメント
+
+- バージョンの正は **`pyproject.toml` の `[project].version`**（`comfyui-manager.json` は使わない）
+- README / README_ja に `pyproject.toml` の説明は書かない（慣習的な冗長を避ける）
+- 変更履歴は `CHANGELOG.md`（形式は `changelog.mdc` を参照）
+
+## Git 運用
+
+詳細は **`git-workflow.mdc`**（常時適用）。要点:
+
+- **今後の作業**: 作業単位でコミットを追加し、内容を記録する（差し戻し可能な粒度）。既存履歴の整理はしない。
+- `git push` / PR はユーザー明示まで行わない。
+- リリース: `pyproject.toml` → `:arrow_up: vX.Y.Z` → タグ → `CHANGELOG.md`。

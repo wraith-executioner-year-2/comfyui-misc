@@ -1,0 +1,37 @@
+---
+description: Python ノード定義・型・プリミティブ combined の規約
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# Python バックエンド
+
+## 命名
+
+- 表示名・クラスキー: `get_name("Any Switch")` → `"Any Switch (misc)"`
+- カテゴリ: `get_category()` → `"misc"`
+
+## 型（`utils/comfy_types.py`）
+
+- 任意接続: `any_type` (`AnyType("*")`)
+- Combine↔Split 専用: `combined_primitives_type`（表示・リンク型は `PRIMITIVES`、エイリアス `combined` 互換）
+- 可変 optional 入力: `FlexibleOptionalInputType`
+- 可変出力: `ByPassTypeTuple` / `ByPassNamesTuple`（Split は `SplitReturnTypes` で全データスロットを `*` 扱い）
+
+## combined データ
+
+```python
+{"values": tuple(...), "types": tuple(...)}  # pack_combined_primitives / unpack_combined_primitives
+```
+
+## ForEach / End ForEach
+
+- **ForEach**: `OUTPUT_IS_LIST = (True,)` — `combined` を展開し各要素をリストで下流へ。出力 `*` は JS でも常に `*`
+- **End ForEach**: `INPUT_IS_LIST = True` — ループ結果を `pack_combined_primitives` で再結合。入力 `value` は JS でも常に `*`
+
+## 新規ノード追加時
+
+1. `*_primitives.py` または専用モジュールに `Misc*` クラス
+2. `NODE_CLASS_MAPPINGS` / `NODE_DISPLAY_NAME_MAPPINGS`
+3. `__init__.py` でマージ
+4. 対応する `js/*.js` と `test/js/*.test.js`

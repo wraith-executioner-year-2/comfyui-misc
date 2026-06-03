@@ -1,0 +1,49 @@
+---
+description: JS 拡張・動的スロット・コピペ復元・ノードサイズ
+globs: "js/**"
+alwaysApply: false
+---
+
+# JavaScript フロントエンド
+
+## 拡張の型
+
+```javascript
+app.registerExtension({
+  name: "comfyui-misc.Something",
+  async beforeRegisterNodeDef(nodeType, nodeData) {
+    if (nodeData.name !== NODE_CLASS) return;
+  },
+});
+```
+
+- `NODE_CLASS` は Python の `get_name(...)` と同じ文字列
+- `nodeData.input` / `output` は動的スロット用に上書きすることが多い
+
+## パターン
+
+- **`attachStabilizeHooks`**: `stabilize` / `scheduleStabilize`（debounce）の共通ライフサイクル
+- **`pinWildcardSlot`**: ForEach 出力 / End ForEach `value` を常に `*`
+- **`scheduleStabilizeRetries`**: 読込・コピペ直後のリンク復元揺れを吸収
+- **`onConfigure`**: ワークフロー読込・コピペ直後に `_misc*RestoringUntil = Date.now() + MISC_GRAPH_RESTORE_WINDOW_MS`（2500ms）
+- **コピペ中**: リンク未復元のスロットを `removeOutput` / `removeInput` しない（Split / Any Output Switch 等）
+- **Split 出力増減後**: `syncNodeSizeToContent(node)`（`js/utils/node-layout.js`）で `computeSize` に合わせる
+- **PRIMITIVES 表示**: `syncPrimitivesLinkSlot`、ラベルは `combined`
+- **グラフ走査**: `findLinkedCombineNode` / `propagatePrimitiveSplitSync` — Reroute・Any Switch・**ForEach/End ForEach** もパイプラインとして辿る
+
+## Any Switch 固有
+
+- `select_index` は入力配列の**末尾**（`moveSelectIndexInputToEnd`）
+- `getDesiredAnyInputCount`: 最後に接続された `any_XX` + 1 本（空スロット1本）
+- 型解決はデータ出力スロット 0 のみ（`index` 出力だけ接続しても `*` のまま）
+- コピペ時: `remapPastedLinksToNamedInputs`（`select_index` が先頭にあるとき）
+
+## Any Output Switch 固有
+
+- 復元中は `shouldSkipAnyOutputDataRemoval` で data 出力を削除しない
+- `minDataOutputsForRestore` でキャッシュ本数を維持
+
+## 変更の最小化
+
+- 既存ノードの命名・import スタイルに合わせる
+- 1〜2行で済むヘルパは過剰抽象化しない
