@@ -73,8 +73,8 @@
   - `length` (`INT`)
 
 **使い方**
-1. `Combine Primitives (misc)` の `combined` を接続します。
-2. 下流の Primitive 消費ノードを `primitive_*` に接続します。
+1. `Combine Primitives (misc)` の `combined` を接続します（`combined` 出力から検索で Split を作成して接続しても同期されます）。
+2. 下流の Primitive 消費ノードを `INT_01` など型名付き出力に接続します。
 3. 出力スロットは上流 Combine の接続状況に合わせて自動同期されます（`Any Switch (misc)` や `Reroute` など中継ノード越しでも同期）。
 4. ワークフロー読込み/コピー＆ペースト復元時は、まず接続維持を優先し、その後に型同期します。
 
@@ -88,6 +88,7 @@
 
 - 動的スロットは `js/` の拡張スクリプトで同期しています。
 - ワークフロー互換性のため、ComfyUI 本体とカスタムノードは最新に保ってください。
+- バージョン履歴は [CHANGELOG.md](CHANGELOG.md) を参照してください。
 
 ## JavaScript 単体テスト（ComfyUI 不要）
 

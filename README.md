@@ -73,8 +73,8 @@ Unpacks `combined` produced by `Combine Primitives (misc)`.
   - `length` (`INT`)
 
 **How to use**
-1. Connect `combined` from `Combine Primitives (misc)`.
-2. Connect downstream primitive consumers to `primitive_*` outputs.
+1. Connect `combined` from `Combine Primitives (misc)` (creating Split from the `combined` output search also syncs correctly).
+2. Connect downstream primitive consumers to typed outputs such as `INT_01`.
 3. Output slots auto-sync with upstream combine connections (even through relay nodes such as `Any Switch (misc)` and `Reroute`).
 4. On workflow load / copy-paste restore, output links are preserved first and type-specific sync is applied after graph restoration settles.
 
