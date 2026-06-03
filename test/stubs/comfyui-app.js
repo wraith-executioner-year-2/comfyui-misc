@@ -5,16 +5,16 @@
 
 export const app = {
   graph: {
-    links: new Map()
+    links: new Map(),
   },
   canvas: {
     getCurrentGraph() {
       return {
         getNodeById() {
-          return null;
-        }
-      };
-    }
+          return null
+        },
+      }
+    },
   },
-  configuringGraph: false
-};
+  configuringGraph: false,
+}

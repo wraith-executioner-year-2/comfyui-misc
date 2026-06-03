@@ -2,14 +2,14 @@
  * Any Switch 入力順序（ComfyUI 非依存）
  */
 
-export const SELECT_INDEX_INPUT_NAME = "select_index";
+export const SELECT_INDEX_INPUT_NAME = "select_index"
 
 /**
  * @param {Array<{ name?: string }>} inputs
  * @returns {number}
  */
 export function countAnyInputsInList(inputs) {
-  return (inputs ?? []).filter((inp) => inp.name?.startsWith("any_")).length;
+  return (inputs ?? []).filter((inp) => inp.name?.startsWith("any_")).length
 }
 
 /**
@@ -19,12 +19,12 @@ export function countAnyInputsInList(inputs) {
  * @returns {boolean}
  */
 export function isAnySwitchPasteOrderMismatch(inputs) {
-  const selectIdx = (inputs ?? []).findIndex((inp) => inp.name === SELECT_INDEX_INPUT_NAME);
-  const firstAnyIdx = (inputs ?? []).findIndex((inp) => inp.name?.startsWith("any_"));
+  const selectIdx = (inputs ?? []).findIndex((inp) => inp.name === SELECT_INDEX_INPUT_NAME)
+  const firstAnyIdx = (inputs ?? []).findIndex((inp) => inp.name?.startsWith("any_"))
   if (selectIdx < 0 || firstAnyIdx < 0) {
-    return false;
+    return false
   }
-  return selectIdx < firstAnyIdx;
+  return selectIdx < firstAnyIdx
 }
 
 /**
@@ -35,17 +35,17 @@ export function isAnySwitchPasteOrderMismatch(inputs) {
  * @returns {number}
  */
 export function remapSerializedTargetSlotToInputIndex(serializedSlot, inputs) {
-  const anyCount = countAnyInputsInList(inputs);
+  const anyCount = countAnyInputsInList(inputs)
   if (serializedSlot >= 0 && serializedSlot < anyCount) {
-    const name = `any_${String(serializedSlot + 1).padStart(2, "0")}`;
-    const idx = inputs.findIndex((inp) => inp.name === name);
-    return idx >= 0 ? idx : serializedSlot;
+    const name = `any_${String(serializedSlot + 1).padStart(2, "0")}`
+    const idx = inputs.findIndex((inp) => inp.name === name)
+    return idx >= 0 ? idx : serializedSlot
   }
   if (serializedSlot === anyCount) {
-    const idx = inputs.findIndex((inp) => inp.name === SELECT_INDEX_INPUT_NAME);
-    return idx >= 0 ? idx : serializedSlot;
+    const idx = inputs.findIndex((inp) => inp.name === SELECT_INDEX_INPUT_NAME)
+    return idx >= 0 ? idx : serializedSlot
   }
-  return serializedSlot;
+  return serializedSlot
 }
 
 /**
@@ -58,11 +58,11 @@ export function remapSerializedTargetSlotToInputIndex(serializedSlot, inputs) {
 export function remapPastedLinksToNamedInputs(inputs, linksToNode, nodeId) {
   for (const link of linksToNode) {
     if (link.target_id !== nodeId) {
-      continue;
+      continue
     }
     if (link.target_slot == null) {
-      continue;
+      continue
     }
-    link.target_slot = remapSerializedTargetSlotToInputIndex(link.target_slot, inputs);
+    link.target_slot = remapSerializedTargetSlotToInputIndex(link.target_slot, inputs)
   }
 }

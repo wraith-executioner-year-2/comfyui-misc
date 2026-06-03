@@ -1,6 +1,6 @@
 /** Combine Primitives (misc) */
 
-import { app } from "../../scripts/app.js";
+import { app } from "../../scripts/app.js"
 import {
   attachStabilizeHooks,
   PRIMITIVES_TYPE,
@@ -13,79 +13,79 @@ import {
   notifyDownstreamSplitNodes,
   removeUnusedInputsFromEnd,
   resolvePrimitiveSlotType,
-  storePrimitiveSlotTypes
-} from "./utils.js";
+  storePrimitiveSlotTypes,
+} from "./utils.js"
 
-const NODE_CLASS = COMBINE_PRIMITIVES_NODE_CLASS;
-const SPLIT_NODE_CLASS = SPLIT_PRIMITIVES_NODE_CLASS;
-const MIN_PRIMITIVE_INPUTS = 1;
-const PRIMITIVE_NAME_RE = /^primitive_/;
+const NODE_CLASS = COMBINE_PRIMITIVES_NODE_CLASS
+const SPLIT_NODE_CLASS = SPLIT_PRIMITIVES_NODE_CLASS
+const MIN_PRIMITIVE_INPUTS = 1
+const PRIMITIVE_NAME_RE = /^primitive_/
 
 const DEFAULT_PRIMITIVE_INPUTS = Object.fromEntries(
   Array.from({ length: MIN_PRIMITIVE_INPUTS }, (_, i) => [
     `primitive_${String(i + 1).padStart(2, "0")}`,
-    [PRIMITIVE_SLOT_TYPE]
-  ])
-);
+    [PRIMITIVE_SLOT_TYPE],
+  ]),
+)
 
 function setupCombinePrimitives(nodeType) {
   attachStabilizeHooks(nodeType, {
     afterBind(node) {
       if (!node.inputs.some((inp) => PRIMITIVE_NAME_RE.test(inp.name ?? ""))) {
-        addPrimitiveInputs(node, MIN_PRIMITIVE_INPUTS);
+        addPrimitiveInputs(node, MIN_PRIMITIVE_INPUTS)
       }
-    }
-  });
+    },
+  })
 
   nodeType.prototype.stabilize = function () {
-    removeUnusedInputsFromEnd(this, Math.max(1, MIN_PRIMITIVE_INPUTS - 1), PRIMITIVE_NAME_RE);
+    removeUnusedInputsFromEnd(this, Math.max(1, MIN_PRIMITIVE_INPUTS - 1), PRIMITIVE_NAME_RE)
 
-    const lastInput = this.inputs[this.inputs.length - 1];
+    const lastInput = this.inputs[this.inputs.length - 1]
     if (lastInput?.link && PRIMITIVE_NAME_RE.test(lastInput.name ?? "")) {
-      addPrimitiveInputs(this, 1);
+      addPrimitiveInputs(this, 1)
     } else if (this.inputs.length < MIN_PRIMITIVE_INPUTS) {
-      addPrimitiveInputs(this, MIN_PRIMITIVE_INPUTS - this.inputs.length);
+      addPrimitiveInputs(this, MIN_PRIMITIVE_INPUTS - this.inputs.length)
     }
 
-    const storedSlots = [];
+    const storedSlots = []
     for (let i = 0; i < this.inputs.length; i++) {
-      const input = this.inputs[i];
+      const input = this.inputs[i]
       if (!PRIMITIVE_NAME_RE.test(input.name ?? "")) {
-        continue;
+        continue
       }
-      input.type = PRIMITIVE_SLOT_TYPE;
+      input.type = PRIMITIVE_SLOT_TYPE
       if (input.link) {
-        const resolvedType = resolvePrimitiveSlotType(this, i, input);
-        storedSlots.push({ name: input.name, type: resolvedType });
+        const resolvedType = resolvePrimitiveSlotType(this, i, input)
+        storedSlots.push({ name: input.name, type: resolvedType })
       }
     }
     if (storedSlots.length > 0) {
-      storePrimitiveSlotTypes(this, storedSlots);
+      storePrimitiveSlotTypes(this, storedSlots)
     } else if (this.properties?.[MISC_PRIMITIVE_SLOT_TYPES_KEY] != null) {
-      delete this.properties[MISC_PRIMITIVE_SLOT_TYPES_KEY];
+      delete this.properties[MISC_PRIMITIVE_SLOT_TYPES_KEY]
     }
 
-    syncPrimitivesLinkSlot(this.outputs.find((o) => o.name === "combined"));
-    notifyDownstreamSplitNodes(this, SPLIT_NODE_CLASS);
-  };
+    syncPrimitivesLinkSlot(this.outputs.find((o) => o.name === "combined"))
+    notifyDownstreamSplitNodes(this, SPLIT_NODE_CLASS)
+  }
 }
 
 app.registerExtension({
   name: "comfyui-misc.CombinePrimitives",
   async beforeRegisterNodeDef(nodeType, nodeData) {
     if (nodeData.name !== NODE_CLASS) {
-      return;
+      return
     }
 
-    nodeData.input = nodeData.input ?? {};
-    nodeData.input.required = nodeData.input.required ?? {};
+    nodeData.input = nodeData.input ?? {}
+    nodeData.input.required = nodeData.input.required ?? {}
     nodeData.input.optional = {
       ...DEFAULT_PRIMITIVE_INPUTS,
-      ...(nodeData.input.optional ?? {})
-    };
-    nodeData.output = [PRIMITIVES_TYPE, "INT"];
-    nodeData.output_name = ["combined", "length"];
+      ...(nodeData.input.optional ?? {}),
+    }
+    nodeData.output = [PRIMITIVES_TYPE, "INT"]
+    nodeData.output_name = ["combined", "length"]
 
-    setupCombinePrimitives(nodeType);
-  }
-});
+    setupCombinePrimitives(nodeType)
+  },
+})

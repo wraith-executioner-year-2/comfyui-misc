@@ -1,9 +1,9 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { defineConfig } from "vitest/config";
+import path from "node:path"
+import { fileURLToPath } from "node:url"
+import { defineConfig } from "vitest/config"
 
-const root = path.dirname(fileURLToPath(import.meta.url));
-const comfyAppStub = path.resolve(root, "test/stubs/comfyui-app.js");
+const root = path.dirname(fileURLToPath(import.meta.url))
+const comfyAppStub = path.resolve(root, "test/stubs/comfyui-app.js")
 
 /** @type {import('vite').Plugin} */
 function resolveComfyUiApp() {
@@ -11,11 +11,11 @@ function resolveComfyUiApp() {
     name: "resolve-comfyui-app",
     resolveId(source) {
       if (source === "../../../scripts/app.js" || source.endsWith("/scripts/app.js")) {
-        return comfyAppStub;
+        return comfyAppStub
       }
-      return null;
-    }
-  };
+      return null
+    },
+  }
 }
 
 export default defineConfig({
@@ -25,6 +25,6 @@ export default defineConfig({
     environment: "node",
     pool: "threads",
     fileParallelism: true,
-    testTimeout: 5000
-  }
-});
+    testTimeout: 5000,
+  },
+})

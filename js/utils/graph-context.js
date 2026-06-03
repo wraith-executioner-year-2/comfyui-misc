@@ -1,4 +1,4 @@
-import { app } from "../../../scripts/app.js";
+import { app } from "../../../scripts/app.js"
 
 /**
  * ノードが属する LGraph（メイングラフ / ExportWorkflowImage 等のオフスクリーン複製）。
@@ -8,7 +8,7 @@ import { app } from "../../../scripts/app.js";
  */
 export function getNodeGraph(node) {
   if (node?.graph) {
-    return node.graph;
+    return node.graph
   }
-  return app?.canvas?.getCurrentGraph?.() ?? app?.graph ?? null;
+  return app?.canvas?.getCurrentGraph?.() ?? app?.graph ?? null
 }

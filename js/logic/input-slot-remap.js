@@ -8,10 +8,10 @@
  */
 export function remapInputTargetSlot(fromIndex, newIndex, targetSlot) {
   if (targetSlot === fromIndex) {
-    return newIndex;
+    return newIndex
   }
   if (targetSlot > fromIndex && targetSlot <= newIndex) {
-    return targetSlot - 1;
+    return targetSlot - 1
   }
-  return targetSlot;
+  return targetSlot
 }

@@ -8,5 +8,5 @@
  * @returns {number}
  */
 export function computeSelectIndexMax(dynamicSlotCount) {
-  return Math.max(-1, dynamicSlotCount - 2);
+  return Math.max(-1, dynamicSlotCount - 2)
 }

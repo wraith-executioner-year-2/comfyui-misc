@@ -1,6 +1,6 @@
 /** Split Primitives (misc) */
 
-import { app } from "../../scripts/app.js";
+import { app } from "../../scripts/app.js"
 import {
   attachStabilizeHooks,
   PRIMITIVES_TYPE,
@@ -17,180 +17,180 @@ import {
   resolvePrimitiveSlotType,
   reconcilePrimitiveSlotType,
   scheduleStabilizeRetries,
-  syncNodeSizeToContent
-} from "./utils.js";
+  syncNodeSizeToContent,
+} from "./utils.js"
 
-import { createTrailingOutputHelpers } from "./utils/trailing-output.js";
+import { createTrailingOutputHelpers } from "./utils/trailing-output.js"
 import {
   formatTypedOutputName,
   typeNameForPrimitiveSlotType,
   listLinkedPrimitiveInputs,
   pickDesiredDuringSync,
-  resolveDesiredPrimitiveSlots
-} from "./logic/split-primitives-names.js";
-import { MISC_GRAPH_RESTORE_WINDOW_MS } from "./logic/restore-window.js";
+  resolveDesiredPrimitiveSlots,
+} from "./logic/split-primitives-names.js"
+import { MISC_GRAPH_RESTORE_WINDOW_MS } from "./logic/restore-window.js"
 
-const NODE_CLASS = SPLIT_PRIMITIVES_NODE_CLASS;
-const COMBINE_NODE_CLASS = COMBINE_PRIMITIVES_NODE_CLASS;
+const NODE_CLASS = SPLIT_PRIMITIVES_NODE_CLASS
+const COMBINE_NODE_CLASS = COMBINE_PRIMITIVES_NODE_CLASS
 
-const RELAY_PATCH_KEY = "__miscPrimitiveRelayPatch";
+const RELAY_PATCH_KEY = "__miscPrimitiveRelayPatch"
 
-const lengthTrailing = createTrailingOutputHelpers(LENGTH_OUTPUT_NAME);
-const countPrimitiveDataOutputs = lengthTrailing.countDataSlots;
-const ensureLengthOutput = lengthTrailing.ensureMeta;
-const isLengthOutputSlot = lengthTrailing.isMetaSlot;
+const lengthTrailing = createTrailingOutputHelpers(LENGTH_OUTPUT_NAME)
+const countPrimitiveDataOutputs = lengthTrailing.countDataSlots
+const ensureLengthOutput = lengthTrailing.ensureMeta
+const isLengthOutputSlot = lengthTrailing.isMetaSlot
 
 function patchRelayNodeConnectionCallbacks() {
   if (LGraphNode.prototype[RELAY_PATCH_KEY]) {
-    return;
+    return
   }
-  LGraphNode.prototype[RELAY_PATCH_KEY] = true;
+  LGraphNode.prototype[RELAY_PATCH_KEY] = true
 
-  const origChange = LGraphNode.prototype.onConnectionsChange;
+  const origChange = LGraphNode.prototype.onConnectionsChange
   LGraphNode.prototype.onConnectionsChange = function (...args) {
-    const ret = origChange?.apply(this, args);
+    const ret = origChange?.apply(this, args)
     if (isPrimitiveRelayNode(this)) {
-      propagatePrimitiveSplitSync(this);
+      propagatePrimitiveSplitSync(this)
     }
-    return ret;
-  };
+    return ret
+  }
 
-  const origChain = LGraphNode.prototype.onConnectionsChainChange;
+  const origChain = LGraphNode.prototype.onConnectionsChainChange
   if (origChain) {
     LGraphNode.prototype.onConnectionsChainChange = function (...args) {
-      const ret = origChain.apply(this, args);
+      const ret = origChain.apply(this, args)
       if (isPrimitiveRelayNode(this)) {
-        propagatePrimitiveSplitSync(this);
+        propagatePrimitiveSplitSync(this)
       }
-      return ret;
-    };
+      return ret
+    }
   }
 }
 
 function addPrimitiveOutputBeforeLength(node, name, type) {
-  ensureLengthOutput(node);
+  ensureLengthOutput(node)
   if (isLengthOutputSlot(node)) {
-    const lengthSlot = node.outputs.pop();
-    node.addOutput(name, type);
-    node.outputs.push(lengthSlot);
+    const lengthSlot = node.outputs.pop()
+    node.addOutput(name, type)
+    node.outputs.push(lengthSlot)
   } else {
-    node.addOutput(name, type);
-    ensureLengthOutput(node);
+    node.addOutput(name, type)
+    ensureLengthOutput(node)
   }
 }
 
 function collectExistingOutputSnapshot(splitNode) {
-  const end = countPrimitiveDataOutputs(splitNode);
-  const snapshot = [];
+  const end = countPrimitiveDataOutputs(splitNode)
+  const snapshot = []
   for (let i = 0; i < end; i++) {
-    const out = splitNode.outputs?.[i];
+    const out = splitNode.outputs?.[i]
     if (!out?.name) {
-      continue;
+      continue
     }
-    snapshot.push({ name: out.name, type: out.type });
+    snapshot.push({ name: out.name, type: out.type })
   }
-  return snapshot;
+  return snapshot
 }
 
 function ensurePrimitiveOutputsCount(splitNode, count, defaultType = PRIMITIVE_SLOT_TYPE) {
-  ensureLengthOutput(splitNode);
+  ensureLengthOutput(splitNode)
   while (countPrimitiveDataOutputs(splitNode) < count) {
-    const idx = countPrimitiveDataOutputs(splitNode);
-    addPrimitiveOutputBeforeLength(splitNode, `primitive_${String(idx + 1).padStart(2, "0")}`, defaultType);
+    const idx = countPrimitiveDataOutputs(splitNode)
+    addPrimitiveOutputBeforeLength(splitNode, `primitive_${String(idx + 1).padStart(2, "0")}`, defaultType)
   }
 }
 
 function normalizeLengthOutput(splitNode) {
-  const lengthOut = splitNode.outputs[splitNode.outputs.length - 1];
+  const lengthOut = splitNode.outputs[splitNode.outputs.length - 1]
   if (!lengthOut) {
-    return;
+    return
   }
-  lengthOut.type = "INT";
-  lengthOut.name = LENGTH_OUTPUT_NAME;
-  lengthOut.label = LENGTH_OUTPUT_NAME;
+  lengthOut.type = "INT"
+  lengthOut.name = LENGTH_OUTPUT_NAME
+  lengthOut.label = LENGTH_OUTPUT_NAME
 }
 
 function ensureSplitOutputLabels(splitNode) {
-  const end = countPrimitiveDataOutputs(splitNode);
+  const end = countPrimitiveDataOutputs(splitNode)
   for (let i = 0; i < end; i++) {
-    const out = splitNode.outputs?.[i];
+    const out = splitNode.outputs?.[i]
     if (!out?.name) {
-      continue;
+      continue
     }
     if (out.label !== out.name) {
-      out.label = out.name;
+      out.label = out.name
     }
   }
-  normalizeLengthOutput(splitNode);
+  normalizeLengthOutput(splitNode)
 }
 
 function setGenericPrimitiveOutputs(splitNode) {
-  const end = countPrimitiveDataOutputs(splitNode);
+  const end = countPrimitiveDataOutputs(splitNode)
   for (let i = 0; i < end; i++) {
-    const out = splitNode.outputs[i];
+    const out = splitNode.outputs[i]
     if (!out?.name?.includes("_")) {
-      continue;
+      continue
     }
-    out.type = PRIMITIVE_SLOT_TYPE;
-    out.label = out.name;
+    out.type = PRIMITIVE_SLOT_TYPE
+    out.label = out.name
   }
 }
 
 function applySnapshotPlaceholders(splitNode, snapshot) {
   if (!snapshot?.length) {
-    return;
+    return
   }
-  ensurePrimitiveOutputsCount(splitNode, snapshot.length, PRIMITIVE_SLOT_TYPE);
+  ensurePrimitiveOutputsCount(splitNode, snapshot.length, PRIMITIVE_SLOT_TYPE)
   for (let i = 0; i < snapshot.length; i++) {
-    const out = splitNode.outputs?.[i];
-    const snap = snapshot[i];
+    const out = splitNode.outputs?.[i]
+    const snap = snapshot[i]
     if (!out || !snap) {
-      continue;
+      continue
     }
-    out.name = snap.name;
-    out.type = PRIMITIVE_SLOT_TYPE;
-    out.label = snap.name;
+    out.name = snap.name
+    out.type = PRIMITIVE_SLOT_TYPE
+    out.label = snap.name
   }
-  normalizeLengthOutput(splitNode);
+  normalizeLengthOutput(splitNode)
 }
 
 function listLinkedWithResolvedTypes(combineNode) {
-  const linked = [];
+  const linked = []
   for (let i = 0; i < (combineNode.inputs ?? []).length; i++) {
-    const inp = combineNode.inputs[i];
+    const inp = combineNode.inputs[i]
     if (!inp?.name?.startsWith("primitive_") || !inp.link) {
-      continue;
+      continue
     }
     linked.push({
       name: inp.name,
-      type: resolvePrimitiveSlotType(combineNode, i, inp)
-    });
+      type: resolvePrimitiveSlotType(combineNode, i, inp),
+    })
   }
-  return linked;
+  return linked
 }
 
 function getCombinedInput(splitNode) {
-  return splitNode.inputs?.find((inp) => inp.name === "combined");
+  return splitNode.inputs?.find((inp) => inp.name === "combined")
 }
 
 function syncSplitFromCombine(splitNode, combineNode) {
-  ensureLengthOutput(splitNode);
+  ensureLengthOutput(splitNode)
 
-  const restoring = Date.now() < (splitNode._miscSplitRestoringUntil || 0);
-  const combinedInput = getCombinedInput(splitNode);
-  const hasCombinedLink = !!combinedInput?.link;
+  const restoring = Date.now() < (splitNode._miscSplitRestoringUntil || 0)
+  const combinedInput = getCombinedInput(splitNode)
+  const hasCombinedLink = !!combinedInput?.link
 
   if (!restoring && !combineNode && hasCombinedLink) {
-    ensurePrimitiveOutputsCount(splitNode, 1, PRIMITIVE_SLOT_TYPE);
-    normalizeLengthOutput(splitNode);
-    ensureSplitOutputLabels(splitNode);
-    return;
+    ensurePrimitiveOutputsCount(splitNode, 1, PRIMITIVE_SLOT_TYPE)
+    normalizeLengthOutput(splitNode)
+    ensureSplitOutputLabels(splitNode)
+    return
   }
 
   if (restoring && !combineNode) {
-    setGenericPrimitiveOutputs(splitNode);
-    normalizeLengthOutput(splitNode);
-    return;
+    setGenericPrimitiveOutputs(splitNode)
+    normalizeLengthOutput(splitNode)
+    return
   }
 
   const desired = pickDesiredDuringSync({
@@ -199,169 +199,169 @@ function syncSplitFromCombine(splitNode, combineNode) {
     hasCombinedLink,
     cachedDesired: splitNode._miscSplitCachedDesired,
     linked: combineNode ? listLinkedWithResolvedTypes(combineNode) : [],
-    stored: combineNode ? getStoredPrimitiveSlotTypes(combineNode) : null
-  });
-  const desiredCount = desired.length;
+    stored: combineNode ? getStoredPrimitiveSlotTypes(combineNode) : null,
+  })
+  const desiredCount = desired.length
 
   while (countPrimitiveDataOutputs(splitNode) < desiredCount) {
-    const idx = countPrimitiveDataOutputs(splitNode);
-    const slot = desired[idx];
+    const idx = countPrimitiveDataOutputs(splitNode)
+    const slot = desired[idx]
     if (!slot) {
-      break;
+      break
     }
-    addPrimitiveOutputBeforeLength(splitNode, formatTypedOutputName(slot.type, idx), slot.type);
+    addPrimitiveOutputBeforeLength(splitNode, formatTypedOutputName(slot.type, idx), slot.type)
   }
 
   while (countPrimitiveDataOutputs(splitNode) > desiredCount) {
-    const removeIndex = countPrimitiveDataOutputs(splitNode) - 1;
-    const output = splitNode.outputs[removeIndex];
+    const removeIndex = countPrimitiveDataOutputs(splitNode) - 1
+    const output = splitNode.outputs[removeIndex]
 
     if (restoring) {
-      break;
+      break
     }
     if (output?.links?.length) {
-      break;
+      break
     }
-    splitNode.removeOutput(removeIndex);
+    splitNode.removeOutput(removeIndex)
   }
 
   for (let i = 0; i < desiredCount; i++) {
-    const output = splitNode.outputs[i];
+    const output = splitNode.outputs[i]
     if (!output) {
-      break;
+      break
     }
 
-    const want = desired[i];
+    const want = desired[i]
     if (!want) {
-      continue;
+      continue
     }
 
-    const typedName = formatTypedOutputName(want.type, i);
+    const typedName = formatTypedOutputName(want.type, i)
     if (output.name !== typedName) {
-      output.name = typedName;
+      output.name = typedName
     }
 
     if (restoring) {
-      output.type = PRIMITIVE_SLOT_TYPE;
+      output.type = PRIMITIVE_SLOT_TYPE
     } else {
-      output.type = reconcilePrimitiveSlotType(output.type, want.type);
+      output.type = reconcilePrimitiveSlotType(output.type, want.type)
     }
 
-    output.label = output.name;
+    output.label = output.name
   }
 
-  ensureSplitOutputLabels(splitNode);
-  syncNodeSizeToContent(splitNode);
+  ensureSplitOutputLabels(splitNode)
+  syncNodeSizeToContent(splitNode)
 }
 
 function initSplitRestoreState(node) {
-  node._miscSplitGraphReady = true;
-  node._miscSplitRestoringUntil = 0;
-  node._miscSplitCachedOutputs = null;
-  node._miscSplitCachedDesired = null;
+  node._miscSplitGraphReady = true
+  node._miscSplitRestoringUntil = 0
+  node._miscSplitCachedOutputs = null
+  node._miscSplitCachedDesired = null
 }
 
 function setupSplitPrimitives(nodeType) {
-  const onDrawForeground = nodeType.prototype.onDrawForeground;
+  const onDrawForeground = nodeType.prototype.onDrawForeground
 
   attachStabilizeHooks(nodeType, {
     configureStabilize: "none",
     afterBind(node) {
-      initSplitRestoreState(node);
-      syncPrimitivesLinkSlot(getCombinedInput(node));
+      initSplitRestoreState(node)
+      syncPrimitivesLinkSlot(getCombinedInput(node))
     },
     afterStabilizeOnCreate(node) {
-      scheduleStabilizeRetries(node, [80]);
+      scheduleStabilizeRetries(node, [80])
     },
     onConfigure(node) {
-      initSplitRestoreState(node);
-      node._miscSplitRestoringUntil = Date.now() + MISC_GRAPH_RESTORE_WINDOW_MS;
-      node._miscSplitCachedOutputs = collectExistingOutputSnapshot(node);
+      initSplitRestoreState(node)
+      node._miscSplitRestoringUntil = Date.now() + MISC_GRAPH_RESTORE_WINDOW_MS
+      node._miscSplitCachedOutputs = collectExistingOutputSnapshot(node)
       node._miscSplitCachedDesired = node._miscSplitCachedOutputs
         ? node._miscSplitCachedOutputs.map((s) => ({ name: s.name, type: s.type }))
-        : null;
-      applySnapshotPlaceholders(node, node._miscSplitCachedOutputs);
-      node.stabilize();
-      scheduleStabilizeRetries(node, [80, 200, 500, 1200], { doubleRaf: true });
+        : null
+      applySnapshotPlaceholders(node, node._miscSplitCachedOutputs)
+      node.stabilize()
+      scheduleStabilizeRetries(node, [80, 200, 500, 1200], { doubleRaf: true })
     },
     onConnectionsChange(node, type, slotIndex, isConnected, _linkInfo, ioSlot) {
       if (ioSlot && node.outputs?.includes(ioSlot)) {
-        return false;
+        return false
       }
       if (type === IoDirection.OUTPUT) {
-        return false;
+        return false
       }
       if (!node._miscSplitGraphReady) {
-        return false;
+        return false
       }
-      const slot = ioSlot ?? node.inputs?.[slotIndex];
+      const slot = ioSlot ?? node.inputs?.[slotIndex]
       if (type === IoDirection.INPUT && isConnected && slot?.name === "combined") {
-        const combineNode = findLinkedCombineNode(node, COMBINE_NODE_CLASS);
-        combineNode?.stabilize?.();
-        node.stabilize();
-        scheduleStabilizeRetries(node, [80]);
-        return false;
+        const combineNode = findLinkedCombineNode(node, COMBINE_NODE_CLASS)
+        combineNode?.stabilize?.()
+        node.stabilize()
+        scheduleStabilizeRetries(node, [80])
+        return false
       }
     },
     onConnectionsChainChange(node) {
       if (!node._miscSplitGraphReady) {
-        return false;
+        return false
       }
-    }
-  });
+    },
+  })
 
   nodeType.prototype.onDrawForeground = function (ctx) {
-    onDrawForeground?.call(this, ctx);
+    onDrawForeground?.call(this, ctx)
     if (this._miscSplitGraphReady) {
-      ensureSplitOutputLabels(this);
+      ensureSplitOutputLabels(this)
     }
-  };
+  }
 
   nodeType.prototype.stabilize = function () {
     if (!this._miscSplitGraphReady) {
-      return;
+      return
     }
 
-    syncPrimitivesLinkSlot(getCombinedInput(this));
+    syncPrimitivesLinkSlot(getCombinedInput(this))
 
-    const combineNode = findLinkedCombineNode(this, COMBINE_NODE_CLASS);
-    const restoring = Date.now() < (this._miscSplitRestoringUntil || 0);
-    syncSplitFromCombine(this, combineNode);
+    const combineNode = findLinkedCombineNode(this, COMBINE_NODE_CLASS)
+    const restoring = Date.now() < (this._miscSplitRestoringUntil || 0)
+    syncSplitFromCombine(this, combineNode)
 
     if (restoring && combineNode && this._miscSplitCachedOutputs) {
-      const current = collectExistingOutputSnapshot(this);
-      const cached = this._miscSplitCachedOutputs;
+      const current = collectExistingOutputSnapshot(this)
+      const cached = this._miscSplitCachedOutputs
       const differs =
         current.length !== cached.length ||
-        current.some((s, i) => s.name !== cached[i]?.name || s.type !== cached[i]?.type);
+        current.some((s, i) => s.name !== cached[i]?.name || s.type !== cached[i]?.type)
       if (differs) {
-        requestAnimationFrame(() => this.scheduleStabilize(0));
+        requestAnimationFrame(() => this.scheduleStabilize(0))
       }
     }
 
-    syncNodeSizeToContent(this);
-  };
+    syncNodeSizeToContent(this)
+  }
 }
 
 app.registerExtension({
   name: "comfyui-misc.SplitPrimitives",
   init() {
-    patchRelayNodeConnectionCallbacks();
+    patchRelayNodeConnectionCallbacks()
   },
   async beforeRegisterNodeDef(nodeType, nodeData) {
     if (nodeData.name !== NODE_CLASS) {
-      return;
+      return
     }
 
-    nodeData.input = nodeData.input ?? {};
+    nodeData.input = nodeData.input ?? {}
     nodeData.input.required = {
       ...(nodeData.input.required ?? {}),
-      combined: [PRIMITIVES_TYPE]
-    };
+      combined: [PRIMITIVES_TYPE],
+    }
 
-    nodeData.output = [PRIMITIVE_SLOT_TYPE, "INT"];
-    nodeData.output_name = ["primitive_01", "length"];
+    nodeData.output = [PRIMITIVE_SLOT_TYPE, "INT"]
+    nodeData.output_name = ["primitive_01", "length"]
 
-    setupSplitPrimitives(nodeType);
-  }
-});
+    setupSplitPrimitives(nodeType)
+  },
+})

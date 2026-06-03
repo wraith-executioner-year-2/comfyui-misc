@@ -1,11 +1,11 @@
 import {
   isAnySwitchPasteOrderMismatch,
-  remapPastedLinksToNamedInputs
-} from "../logic/any-switch-input-order.js";
-import { remapInputTargetSlot } from "../logic/input-slot-remap.js";
-import { getNodeGraph } from "./graph-context.js";
-import { forEachGraphLink, getGraphLink } from "./graph-links.js";
-import { SELECT_INDEX_KEY } from "./select-index.js";
+  remapPastedLinksToNamedInputs,
+} from "../logic/any-switch-input-order.js"
+import { remapInputTargetSlot } from "../logic/input-slot-remap.js"
+import { getNodeGraph } from "./graph-context.js"
+import { forEachGraphLink, getGraphLink } from "./graph-links.js"
+import { SELECT_INDEX_KEY } from "./select-index.js"
 
 /**
  * select_index 入力を末尾へ移し、既存リンクの target_slot を更新する。
@@ -14,44 +14,44 @@ import { SELECT_INDEX_KEY } from "./select-index.js";
  * @returns {boolean} 並べ替えを行った
  */
 export function moveSelectIndexInputToEnd(node) {
-  const inputs = node.inputs;
+  const inputs = node.inputs
   if (!inputs?.length) {
-    return false;
+    return false
   }
-  const fromIndex = inputs.findIndex((inp) => inp.name === SELECT_INDEX_KEY);
+  const fromIndex = inputs.findIndex((inp) => inp.name === SELECT_INDEX_KEY)
   if (fromIndex < 0) {
-    return false;
+    return false
   }
-  const newIndex = inputs.length - 1;
+  const newIndex = inputs.length - 1
   if (fromIndex >= newIndex) {
-    return false;
+    return false
   }
 
-  const graph = getNodeGraph(node);
+  const graph = getNodeGraph(node)
   if (graph && isAnySwitchPasteOrderMismatch(inputs)) {
-    const linksToNode = [];
+    const linksToNode = []
     forEachGraphLink(graph, (link) => {
       if (link.target_id === node.id) {
-        linksToNode.push(link);
+        linksToNode.push(link)
       }
-    });
-    remapPastedLinksToNamedInputs(inputs, linksToNode, node.id);
+    })
+    remapPastedLinksToNamedInputs(inputs, linksToNode, node.id)
   }
 
-  const [selectInput] = inputs.splice(fromIndex, 1);
-  inputs.push(selectInput);
+  const [selectInput] = inputs.splice(fromIndex, 1)
+  inputs.push(selectInput)
 
   if (graph) {
     forEachGraphLink(graph, (link) => {
       if (link.target_id !== node.id) {
-        return;
+        return
       }
-      link.target_slot = remapInputTargetSlot(fromIndex, newIndex, link.target_slot);
-    });
+      link.target_slot = remapInputTargetSlot(fromIndex, newIndex, link.target_slot)
+    })
   }
 
-  node.onInputsOutputsParsed?.();
-  return true;
+  node.onInputsOutputsParsed?.()
+  return true
 }
 
 /**
@@ -61,29 +61,29 @@ export function moveSelectIndexInputToEnd(node) {
  * @param {number} selectSlotIndex
  */
 export function rerouteNonIntLinkFromSelectIndex(node, selectSlotIndex) {
-  const graph = getNodeGraph(node);
-  const selectInput = node.inputs?.[selectSlotIndex];
+  const graph = getNodeGraph(node)
+  const selectInput = node.inputs?.[selectSlotIndex]
   if (!graph || !selectInput?.link) {
-    return;
+    return
   }
 
-  const link = getGraphLink(graph, selectInput.link);
+  const link = getGraphLink(graph, selectInput.link)
   if (!link) {
-    return;
+    return
   }
 
-  const origin = graph.getNodeById(link.origin_id);
-  const originOut = origin?.outputs?.[link.origin_slot];
-  const outType = originOut?.type;
+  const origin = graph.getNodeById(link.origin_id)
+  const originOut = origin?.outputs?.[link.origin_slot]
+  const outType = originOut?.type
   if (outType == null || outType === "INT") {
-    return;
+    return
   }
 
-  const anySlot = node.inputs.findIndex((inp) => inp.name?.startsWith("any_"));
+  const anySlot = node.inputs.findIndex((inp) => inp.name?.startsWith("any_"))
   if (anySlot < 0 || typeof origin?.connect !== "function") {
-    return;
+    return
   }
 
-  node.disconnectInput(selectSlotIndex, false);
-  origin.connect(link.origin_slot, node, anySlot);
+  node.disconnectInput(selectSlotIndex, false)
+  origin.connect(link.origin_slot, node, anySlot)
 }

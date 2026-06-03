@@ -1,4 +1,4 @@
-import { debounce } from "./debounce.js";
+import { debounce } from "./debounce.js"
 
 /**
  * stabilize / scheduleStabilize の共通ライフサイクルを nodeType に載せる。
@@ -24,53 +24,53 @@ export function attachStabilizeHooks(nodeType, options = {}) {
     onConnectionsChange,
     onConnectionsChainChange,
     stabilizeOnCreate = true,
-    debounceMs = 64
-  } = options;
+    debounceMs = 64,
+  } = options
 
-  const origCreated = nodeType.prototype.onNodeCreated;
-  const origConfigure = nodeType.prototype.onConfigure;
-  const origChange = nodeType.prototype.onConnectionsChange;
-  const origChain = nodeType.prototype.onConnectionsChainChange;
+  const origCreated = nodeType.prototype.onNodeCreated
+  const origConfigure = nodeType.prototype.onConfigure
+  const origChange = nodeType.prototype.onConnectionsChange
+  const origChain = nodeType.prototype.onConnectionsChainChange
 
   nodeType.prototype.onNodeCreated = function () {
-    const result = origCreated?.apply(this, arguments);
-    this.stabilizeBound = this.stabilize.bind(this);
-    afterBind?.(this);
+    const result = origCreated?.apply(this, arguments)
+    this.stabilizeBound = this.stabilize.bind(this)
+    afterBind?.(this)
     if (stabilizeOnCreate) {
-      this.stabilize();
-      afterStabilizeOnCreate?.(this);
+      this.stabilize()
+      afterStabilizeOnCreate?.(this)
     }
-    return result;
-  };
+    return result
+  }
 
   nodeType.prototype.onConfigure = function () {
-    const result = origConfigure?.apply(this, arguments);
-    onConfigure?.(this);
+    const result = origConfigure?.apply(this, arguments)
+    onConfigure?.(this)
     if (configureStabilize === "schedule") {
-      this.scheduleStabilize();
+      this.scheduleStabilize()
     } else if (configureStabilize === "stabilize") {
-      this.stabilize();
+      this.stabilize()
     }
-    return result;
-  };
+    return result
+  }
 
   nodeType.prototype.onConnectionsChange = function (type, slotIndex, isConnected, linkInfo, ioSlot) {
-    origChange?.call(this, type, slotIndex, isConnected, linkInfo, ioSlot);
+    origChange?.call(this, type, slotIndex, isConnected, linkInfo, ioSlot)
     if (onConnectionsChange?.(this, type, slotIndex, isConnected, linkInfo, ioSlot) === false) {
-      return;
+      return
     }
-    this.scheduleStabilize();
-  };
+    this.scheduleStabilize()
+  }
 
   nodeType.prototype.onConnectionsChainChange = function () {
-    origChain?.call(this);
+    origChain?.call(this)
     if (onConnectionsChainChange?.(this) === false) {
-      return;
+      return
     }
-    this.scheduleStabilize();
-  };
+    this.scheduleStabilize()
+  }
 
   nodeType.prototype.scheduleStabilize = function (ms = debounceMs) {
-    return debounce(this.stabilizeBound, ms);
-  };
+    return debounce(this.stabilizeBound, ms)
+  }
 }

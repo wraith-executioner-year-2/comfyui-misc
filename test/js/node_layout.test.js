@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { syncNodeSizeToContent } from "../../js/utils/node-layout.js";
+import { describe, expect, it } from "vitest"
+import { syncNodeSizeToContent } from "../../js/utils/node-layout.js"
 
 describe("node_layout", () => {
   it("syncNodeSizeToContent は computeSize より小さい枠を広げる", () => {
@@ -8,13 +8,13 @@ describe("node_layout", () => {
       size: [120, 80],
       outputs: [{}, {}, {}],
       computeSize() {
-        return [140, 160];
+        return [140, 160]
       },
       setSize(next) {
-        this.size = [...next];
-      }
-    };
-    syncNodeSizeToContent(node);
-    expect(node.size).toEqual([140, 160]);
-  });
-});
+        this.size = [...next]
+      },
+    }
+    syncNodeSizeToContent(node)
+    expect(node.size).toEqual([140, 160])
+  })
+})

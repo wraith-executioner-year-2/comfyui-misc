@@ -9,9 +9,9 @@
  */
 export function normalizeOutputSlotLayout(node) {
   for (const output of node.outputs ?? []) {
-    delete output.pos;
+    delete output.pos
     if (output.hidden) {
-      output.hidden = false;
+      output.hidden = false
     }
   }
 }
@@ -23,21 +23,21 @@ export function normalizeOutputSlotLayout(node) {
  */
 export function syncNodeSizeToContent(node) {
   if (node.removed || typeof node.computeSize !== "function") {
-    return;
+    return
   }
 
-  normalizeOutputSlotLayout(node);
+  normalizeOutputSlotLayout(node)
 
-  const size = node.computeSize();
+  const size = node.computeSize()
   if (!size?.length) {
-    return;
+    return
   }
 
-  const current = node.size ?? [0, 0];
-  const nextW = size[0];
-  const nextH = size[1];
+  const current = node.size ?? [0, 0]
+  const nextW = size[0]
+  const nextH = size[1]
   if (current[0] !== nextW || current[1] !== nextH) {
-    node.setSize([nextW, nextH]);
-    node.graph?.setDirtyCanvas?.(true, false);
+    node.setSize([nextW, nextH])
+    node.graph?.setDirtyCanvas?.(true, false)
   }
 }

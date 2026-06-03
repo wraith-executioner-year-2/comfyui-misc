@@ -2,7 +2,7 @@
  * Any Output Switch — コピペ / ワークフロー復元（ComfyUI 非依存）
  */
 
-export const INDEX_OUTPUT_NAME = "index";
+export const INDEX_OUTPUT_NAME = "index"
 
 /**
  * @param {Array<{ name?: string }>} outputs
@@ -11,10 +11,10 @@ export const INDEX_OUTPUT_NAME = "index";
 function findTrailingIndexPos(outputs) {
   for (let i = (outputs ?? []).length - 1; i >= 0; i--) {
     if (outputs[i]?.name === INDEX_OUTPUT_NAME) {
-      return i;
+      return i
     }
   }
-  return -1;
+  return -1
 }
 
 /**
@@ -24,17 +24,17 @@ function findTrailingIndexPos(outputs) {
  * @returns {number[]}
  */
 export function listDataOutputSlotIndices(outputs) {
-  const list = outputs ?? [];
-  const len = list.length;
-  const lastIsIndex = len > 0 && list[len - 1]?.name === INDEX_OUTPUT_NAME;
-  const end = lastIsIndex ? len - 1 : len;
-  const indices = [];
+  const list = outputs ?? []
+  const len = list.length
+  const lastIsIndex = len > 0 && list[len - 1]?.name === INDEX_OUTPUT_NAME
+  const end = lastIsIndex ? len - 1 : len
+  const indices = []
   for (let i = 0; i < end; i++) {
     if (list[i]?.name !== INDEX_OUTPUT_NAME) {
-      indices.push(i);
+      indices.push(i)
     }
   }
-  return indices;
+  return indices
 }
 
 /**
@@ -45,16 +45,16 @@ export function listDataOutputSlotIndices(outputs) {
  * @returns {number}
  */
 export function remapSerializedOriginSlotToOutputIndex(serializedSlot, outputs) {
-  const dataIndices = listDataOutputSlotIndices(outputs);
-  const trailingIndexPos = findTrailingIndexPos(outputs);
+  const dataIndices = listDataOutputSlotIndices(outputs)
+  const trailingIndexPos = findTrailingIndexPos(outputs)
 
   if (serializedSlot >= 0 && serializedSlot < dataIndices.length) {
-    return dataIndices[serializedSlot];
+    return dataIndices[serializedSlot]
   }
   if (trailingIndexPos >= 0 && serializedSlot === dataIndices.length) {
-    return trailingIndexPos;
+    return trailingIndexPos
   }
-  return serializedSlot;
+  return serializedSlot
 }
 
 /**
@@ -65,18 +65,18 @@ export function remapSerializedOriginSlotToOutputIndex(serializedSlot, outputs) 
  */
 export function isAnyOutputPasteLayoutMismatch(outputs) {
   if (!outputs?.length) {
-    return false;
+    return false
   }
-  const indexPos = outputs.findIndex((o) => o?.name === INDEX_OUTPUT_NAME);
+  const indexPos = outputs.findIndex((o) => o?.name === INDEX_OUTPUT_NAME)
   if (indexPos >= 0 && indexPos !== outputs.length - 1) {
-    return true;
+    return true
   }
   for (let i = 0; i < outputs.length - 1; i++) {
     if (outputs[i]?.name === INDEX_OUTPUT_NAME) {
-      return true;
+      return true
     }
   }
-  return false;
+  return false
 }
 
 /**
@@ -88,9 +88,9 @@ export function isAnyOutputPasteLayoutMismatch(outputs) {
  */
 export function shouldSkipAnyOutputDataRemoval(restoring, outputHasLinks = false) {
   if (restoring) {
-    return true;
+    return true
   }
-  return outputHasLinks;
+  return outputHasLinks
 }
 
 /**
@@ -104,10 +104,10 @@ export function shouldSkipAnyOutputDataRemoval(restoring, outputHasLinks = false
 export function minDataOutputsForRestore({
   minDefault = 1,
   cachedDataCount = 0,
-  linkedDataOriginSlots = []
+  linkedDataOriginSlots = [],
 }) {
-  const fromLinks = linkedDataOriginSlots.length ? Math.max(...linkedDataOriginSlots) + 1 : 0;
-  return Math.max(minDefault, cachedDataCount, fromLinks);
+  const fromLinks = linkedDataOriginSlots.length ? Math.max(...linkedDataOriginSlots) + 1 : 0
+  return Math.max(minDefault, cachedDataCount, fromLinks)
 }
 
 /**
@@ -120,11 +120,11 @@ export function minDataOutputsForRestore({
 export function remapPastedLinksToNamedOutputs(outputs, linksFromNode, nodeId) {
   for (const link of linksFromNode) {
     if (link.origin_id !== nodeId) {
-      continue;
+      continue
     }
     if (link.origin_slot == null) {
-      continue;
+      continue
     }
-    link.origin_slot = remapSerializedOriginSlotToOutputIndex(link.origin_slot, outputs);
+    link.origin_slot = remapSerializedOriginSlotToOutputIndex(link.origin_slot, outputs)
   }
 }

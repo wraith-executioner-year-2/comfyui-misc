@@ -8,17 +8,17 @@
 export function scheduleStabilizeRetries(node, delaysMs = [80, 200, 500], options = {}) {
   const kick = () => {
     if (!node.removed) {
-      node.scheduleStabilize(0);
+      node.scheduleStabilize(0)
     }
-  };
+  }
 
-  kick();
+  kick()
   if (options.doubleRaf) {
-    requestAnimationFrame(() => requestAnimationFrame(kick));
+    requestAnimationFrame(() => requestAnimationFrame(kick))
   } else {
-    requestAnimationFrame(kick);
+    requestAnimationFrame(kick)
   }
   for (const ms of delaysMs) {
-    setTimeout(kick, ms);
+    setTimeout(kick, ms)
   }
 }
