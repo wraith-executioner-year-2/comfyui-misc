@@ -4,27 +4,13 @@
 
 ## v0.0.3
 
-### [`257f89e`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/257f89e) — :memo: ワークフロー画像内の Split 出力ラベル表記の修正
-
-- README（日本語）のスクリーンショット説明を調整
-
-### [`d8d2e54`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/d8d2e54) — :memo: CHANGELOG のコミットハッシュを GitHub リンク化
-
-- CHANGELOG 各見出しから該当コミットへ遷移できるようにした
-
 ### [`1054bec`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/1054bec) — :bug: Split Primitives が Combine と同期されず出力が空になる問題を修正
 
 - 接続済み `linked` を `stored` より優先して Split の出力本数・型を決定
 - `combined` 接続直後に Combine / Split を即時 `stabilize`（検索からの新規作成に対応）
 - `PRIMITIVES_TYPE` の import 漏れを修正
 
-### [`a314160`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/a314160) — :arrow_up: v0.0.3
-
 ## v0.0.2
-
-### [`fdf9e6f`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/fdf9e6f) — :memo: スクショにワークフローが埋め込まれていなかったので修正
-
-- README のスクリーンショットにワークフローが正しく埋め込まれるよう修正
 
 ### [`d229cdd`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/d229cdd) — :wrench: Add vitest
 
@@ -65,11 +51,6 @@
 - `syncPrimitivesLinkSlot` / `forEachGraphLink` を追加し重複を整理
 - ノード拡張 JS のファイル先頭コメントを簡潔化
 
-### [`d06e1e3`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/d06e1e3) — :memo: CHANGELOG v0.0.2 と ComfyUI-Manager バージョン更新
-
 ## v0.0.1
 
-### [`c989874`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/c989874) — :arrow_up: v0.0.1
-
 - Any Switch (misc) / Any Output Switch (misc) / Combine Primitives (misc) / Split Primitives (misc) を初回リリース
-- README（英語・日本語）と ComfyUI-Manager 登録情報
