@@ -88,6 +88,7 @@ Unpacks `combined` produced by `Combine Primitives (misc)`.
 
 - Dynamic slots are synchronized by JS extensions in `js/`.
 - For workflow compatibility, keep ComfyUI and custom nodes up to date.
+- See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## JavaScript unit tests (no ComfyUI required)
 
