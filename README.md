@@ -97,4 +97,6 @@ npm install
 npm test
 ```
 
-Tests live under `test/js/` (one file per node) and cover regression cases for workflow load / copy-paste / slot typing. Pure logic is in `js/logic/`.
+Tests live under `test/js/` (one file per node, plus `paste_restore.test.js` for copy-paste link restore). Pure logic is in `js/logic/`.
+
+Copy-paste and workflow load temporarily suppress dynamic slot removal so links can finish restoring before `stabilize()` trims unused sockets.
