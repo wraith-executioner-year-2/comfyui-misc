@@ -1,0 +1,18 @@
+[project]
+name = "comfyui-misc"
+version = "0.0.4"
+description = "Utility switch and primitive packing nodes for ComfyUI."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Repository = "https://github.com/wraith-executioner-year-2/comfyui-misc"
+Homepage = "https://github.com/wraith-executioner-year-2/comfyui-misc"
+"Bug Tracker" = "https://github.com/wraith-executioner-year-2/comfyui-misc/issues"
+
+[tool.comfy]
+PublisherId = "wraith-executioner-year-2"
+DisplayName = "ComfyUI Misc Utilities"
