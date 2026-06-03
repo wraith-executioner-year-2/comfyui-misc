@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
-import { buildSwitchOutputValues, computeOutputLayout } from "../../js/logic/any-output-switch-layout.js"
-import { getDesiredAnyInputCount } from "../../js/logic/any-switch-inputs.js"
-import { remapInputTargetSlot } from "../../js/logic/input-slot-remap.js"
-import { remapPastedLinksToNamedInputs } from "../../js/logic/any-switch-input-order.js"
+import { buildSwitchOutputValues, computeOutputLayout } from "../../../js/logic/any-output-switch-layout.js"
+import { getDesiredAnyInputCount } from "../../../js/logic/any-switch-inputs.js"
+import { remapInputTargetSlot } from "../../../js/logic/input-slot-remap.js"
+import { remapPastedLinksToNamedInputs } from "../../../js/logic/any-switch-input-order.js"
 import {
   canRemoveExcessSplitOutput,
   decrementOriginSlotAfterOutputRemoved,
@@ -14,10 +14,10 @@ import {
   shouldHoldSplitOutputsWithoutCombine,
   verifyGraphLinksResolve,
   verifyInputLinksAfterSelectIndexMove,
-} from "../../js/logic/paste-restore.js"
-import { formatTypedOutputName, resolveDesiredPrimitiveSlots } from "../../js/logic/split-primitives-names.js"
-import { COMBINE_PRIMITIVES_NODE_CLASS, SPLIT_PRIMITIVES_NODE_CLASS } from "../../js/utils/constants.js"
-import { getStoredPrimitiveSlotTypes, storePrimitiveSlotTypes } from "../../js/utils/primitive-type.js"
+} from "../../../js/logic/paste-restore.js"
+import { formatTypedOutputName, resolveDesiredPrimitiveSlots } from "../../../js/logic/split-primitives-names.js"
+import { COMBINE_PRIMITIVES_NODE_CLASS, SPLIT_PRIMITIVES_NODE_CLASS } from "../../../js/utils/constants.js"
+import { getStoredPrimitiveSlotTypes, storePrimitiveSlotTypes } from "../../../js/utils/primitive-type.js"
 
 const MISC_NODES = [
   "Split Primitives (misc)",

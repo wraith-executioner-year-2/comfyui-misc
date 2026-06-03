@@ -138,5 +138,5 @@ npm test        # unit tests (no ComfyUI)
 npm run format  # Prettier (JS only, no trailing commas)
 ```
 
-- Tests: `test/js/` (pure logic in `js/logic/`)
-- Copy-paste restore: `test/js/paste_restore.test.js`
+- Tests: `test/js/` mirrors `js/` layout (e.g. `test/js/utils/graph_context.test.js`)
+- Copy-paste restore: `test/js/logic/paste_restore.test.js`

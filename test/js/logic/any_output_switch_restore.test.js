@@ -5,7 +5,7 @@ import {
   remapPastedLinksToNamedOutputs,
   remapSerializedOriginSlotToOutputIndex,
   shouldSkipAnyOutputDataRemoval,
-} from "../../js/logic/any-output-switch-restore.js"
+} from "../../../js/logic/any-output-switch-restore.js"
 
 describe("any_output_switch_restore", () => {
   it("復元中は未接続 data 出力を削除しない", () => {

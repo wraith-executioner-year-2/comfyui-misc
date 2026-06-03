@@ -138,5 +138,5 @@ npm test      # 単体テスト（ComfyUI 不要）
 npm run format  # Prettier（JS のみ、trailing comma なし）
 ```
 
-- テスト: `test/js/`（純粋ロジックは `js/logic/`）
-- コピペ復元の横断テスト: `test/js/paste_restore.test.js`
+- テスト: `test/js/` は `js/` と同じ階層（例: `test/js/utils/graph_context.test.js`）
+- コピペ復元の横断テスト: `test/js/logic/paste_restore.test.js`

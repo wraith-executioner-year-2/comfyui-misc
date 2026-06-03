@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { syncNodeSizeToContent } from "../../js/utils/node-layout.js"
+import { syncNodeSizeToContent } from "../../../js/utils/node-layout.js"
 
 describe("node_layout", () => {
   it("syncNodeSizeToContent は computeSize より小さい枠を広げる", () => {
