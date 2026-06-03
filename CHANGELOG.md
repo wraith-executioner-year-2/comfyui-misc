@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.0
+
+### [`eb7bcaa`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/eb7bcaa) — :sparkles: ForEach / End ForEach と stabilize 共通化・Prettier 導入
+
+- `combined` を要素ごとにループ実行する **ForEach (misc)** / **End ForEach (misc)** を追加
+- ForEach 出力 `*` と End ForEach 入力 `value` は接続後も型・ラベルを `*` のまま維持
+- `attachStabilizeHooks` / `pinWildcardSlot` / `scheduleStabilizeRetries` でノード拡張のライフサイクルを共通化
+- Prettier を導入（JS は trailing comma なし）、README に開発手順を整理
+
 ## v0.0.4
 
 ### [`e978159`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/e978159) — :bug: Any Switch の any_* 本数・コピペ復元・index 接続時の型
