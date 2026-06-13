@@ -5,6 +5,59 @@
 
 export const MIN_DATA_OUTPUTS = 1
 
+/** web/any_output_switch.js stabilize が最後の接続 data の次に確保する空きスロット数 */
+export const STABILIZE_TRAILING_EMPTY_DATA_SLOTS = 1
+
+/**
+ * @param {number[]} linkedSlots
+ * @returns {number[]}
+ */
+function normalizeLinkedSlots(linkedSlots) {
+  return [...new Set(linkedSlots.map((s) => Number(s)))].sort((a, b) => a - b)
+}
+
+/**
+ * @param {number[]} sortedSlots
+ * @param {number} minDataOutputs
+ */
+function isIndexOnlyConnection(sortedSlots, minDataOutputs) {
+  return sortedSlots.length === 1 && sortedSlots[0] === minDataOutputs
+}
+
+/**
+ * @param {number} numData
+ * @param {number} maxSlot
+ * @returns {number}
+ */
+export function padNumDataForStabilize(numData, maxSlot) {
+  return Math.max(numData, maxSlot + STABILIZE_TRAILING_EMPTY_DATA_SLOTS + 1)
+}
+
+/**
+ * @param {number[]} sortedSlots
+ * @param {number} minDataOutputs
+ * @returns {{ dataSlots: number[], numData: number, maxSlot: number }}
+ */
+function layoutFromLinkedSlots(sortedSlots, minDataOutputs) {
+  const maxSlot = sortedSlots[sortedSlots.length - 1]
+  const contiguousFromZero = sortedSlots.every((slot, i) => slot === i)
+
+  if (contiguousFromZero) {
+    return {
+      dataSlots: sortedSlots,
+      numData: Math.max(minDataOutputs, maxSlot + 1),
+      maxSlot,
+    }
+  }
+
+  const numData = Math.max(minDataOutputs, maxSlot)
+  return {
+    dataSlots: sortedSlots.filter((s) => s < numData),
+    numData,
+    maxSlot,
+  }
+}
+
 /**
  * @param {number[]} linkedSlots - このノード出力への接続スロット番号
  * @param {number} [minDataOutputs=1]
@@ -16,24 +69,16 @@ export function computeOutputLayout(linkedSlots, minDataOutputs = MIN_DATA_OUTPU
     return { dataSlots: [], numData, indexSlot: numData }
   }
 
-  const sortedSlots = [...new Set(linkedSlots)].sort((a, b) => a - b)
-  const maxSlot = sortedSlots[sortedSlots.length - 1]
+  const sortedSlots = normalizeLinkedSlots(linkedSlots)
 
-  const contiguousFromZero = sortedSlots.every((slot, i) => slot === i)
-  if (contiguousFromZero) {
-    const numData = Math.max(minDataOutputs, maxSlot + 1)
-    return { dataSlots: sortedSlots, numData, indexSlot: numData }
-  }
-
-  if (sortedSlots.length === 1 && sortedSlots[0] === minDataOutputs) {
+  if (isIndexOnlyConnection(sortedSlots, minDataOutputs)) {
     const numData = minDataOutputs
     return { dataSlots: [], numData, indexSlot: numData }
   }
 
-  const numData = Math.max(minDataOutputs, maxSlot)
-  const indexSlot = numData
-  const dataSlots = sortedSlots.filter((s) => s < indexSlot)
-  return { dataSlots, numData, indexSlot }
+  const { dataSlots, numData, maxSlot } = layoutFromLinkedSlots(sortedSlots, minDataOutputs)
+  const paddedNumData = padNumDataForStabilize(numData, maxSlot)
+  return { dataSlots, numData: paddedNumData, indexSlot: paddedNumData }
 }
 
 /**

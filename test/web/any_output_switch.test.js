@@ -1,16 +1,23 @@
 import { describe, expect, it } from "vitest"
 import { buildSwitchOutputValues, computeOutputLayout } from "../../web/logic/any-output-switch-layout.js"
-import { computeSelectIndexMax } from "../../web/logic/select-index-bounds.js"
+import { computeAnyOutputSelectIndexMax, computeSelectIndexMax } from "../../web/logic/select-index-bounds.js"
 import { getGraphLink } from "../../web/utils/graph-links.js"
 import { createTrailingOutputHelpers } from "../../web/utils/trailing-output.js"
 
 describe("any_output_switch", () => {
   describe("computeOutputLayout", () => {
-    it("2本のデータ出力(0,1)接続時、index はスロット2（2本目を index と誤認しない）", () => {
+    it("2本のデータ出力(0,1)接続時、index はスロット3（空き data 1本 + index）", () => {
       const { dataSlots, numData, indexSlot } = computeOutputLayout([0, 1])
       expect(dataSlots).toEqual([0, 1])
-      expect(numData).toBe(2)
-      expect(indexSlot).toBe(2)
+      expect(numData).toBe(3)
+      expect(indexSlot).toBe(3)
+    })
+
+    it("3本のデータ出力(0,1,2)接続時、index はスロット4", () => {
+      const { dataSlots, numData, indexSlot } = computeOutputLayout([0, 1, 2])
+      expect(dataSlots).toEqual([0, 1, 2])
+      expect(numData).toBe(4)
+      expect(indexSlot).toBe(4)
     })
 
     it("index のみ接続(min=1, slot=1)のとき data は空", () => {
@@ -26,10 +33,20 @@ describe("any_output_switch", () => {
       const input = { kind: "latent" }
       const { values, selectedIndex, indexSlot } = buildSwitchOutputValues(input, 0, [0, 1])
       expect(selectedIndex).toBe(0)
-      expect(indexSlot).toBe(2)
+      expect(indexSlot).toBe(3)
       expect(values[0]).toBe(input)
       expect(values[1]).toBeNull()
-      expect(values[2]).toBe(0)
+      expect(values[2]).toBeNull()
+      expect(values[3]).toBe(0)
+    })
+
+    it("select_index=2 で3本接続時、3本目(data)に入力が入り index は最後尾", () => {
+      const input = { kind: "image" }
+      const { values, indexSlot } = buildSwitchOutputValues(input, 2, [0, 1, 2])
+      expect(indexSlot).toBe(4)
+      expect(values[2]).toBe(input)
+      expect(values[4]).toBe(2)
+      expect(typeof values[3]).not.toBe("number")
     })
 
     it("index 出力は最後尾に整数の selectedIndex を載せる", () => {
@@ -41,6 +58,10 @@ describe("any_output_switch", () => {
   describe("select_index 上限", () => {
     it("データ出力3本+空スロット想定で max は 1 (3-2)", () => {
       expect(computeSelectIndexMax(3)).toBe(1)
+    })
+
+    it("データ出力3本すべて接続時は max は 2 (3-1)", () => {
+      expect(computeAnyOutputSelectIndexMax(3, false)).toBe(2)
     })
   })
 

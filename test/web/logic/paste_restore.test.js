@@ -15,7 +15,10 @@ import {
   verifyGraphLinksResolve,
   verifyInputLinksAfterSelectIndexMove,
 } from "../../../web/logic/paste-restore.js"
-import { formatTypedOutputName, resolveDesiredPrimitiveSlots } from "../../../web/logic/split-primitives-names.js"
+import {
+  formatTypedOutputName,
+  resolveDesiredPrimitiveSlots,
+} from "../../../web/logic/split-primitives-names.js"
 import { COMBINE_PRIMITIVES_NODE_CLASS, SPLIT_PRIMITIVES_NODE_CLASS } from "../../../web/utils/constants.js"
 import { getStoredPrimitiveSlotTypes, storePrimitiveSlotTypes } from "../../../web/utils/primitive-type.js"
 
@@ -205,13 +208,15 @@ describe("コピー＆ペースト復元（接続維持）", () => {
       expect(adjusted.origin_slot).toBe(1)
     })
 
-    it("2本 data 接続時 index はスロット2（接続先スロットがずれない）", () => {
+    it("2本 data 接続時 index は空き data 1 本分後（接続先スロットがずれない）", () => {
       const { indexSlot, numData } = computeOutputLayout([0, 1])
-      expect(numData).toBe(2)
-      expect(indexSlot).toBe(2)
+      expect(numData).toBe(3)
+      expect(indexSlot).toBe(3)
       const { values } = buildSwitchOutputValues({ x: 1 }, 0, [0, 1])
-      expect(values[2]).toBe(0)
+      expect(values[0]).toEqual({ x: 1 })
       expect(values[1]).toBeNull()
+      expect(values[2]).toBeNull()
+      expect(values[3]).toBe(0)
     })
 
     it("ペースト後グラフで data / index 出力リンクが解決できる", () => {

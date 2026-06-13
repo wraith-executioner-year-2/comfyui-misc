@@ -7,6 +7,10 @@ import {
 } from "./logic/any-output-switch-restore.js"
 import { MISC_GRAPH_RESTORE_WINDOW_MS } from "./logic/restore-window.js"
 import {
+  computeAnyOutputSelectIndexMax,
+  nodeHasTrailingEmptyDataOutput,
+} from "./logic/select-index-bounds.js"
+import {
   collectDataOutputSnapshot,
   collectLinkedDataOriginSlots,
   remapAnyOutputSwitchPastedLinks,
@@ -156,7 +160,13 @@ function setupMiscAnyOutputSwitch(nodeType) {
     indexOutput.name = INDEX_OUTPUT_NAME
     indexOutput.label = INDEX_OUTPUT_NAME
 
-    syncSelectIndexWidget(this, (node) => countDataOutputs(node) - 2)
+    syncSelectIndexWidget(this, (node) => {
+      const dataCount = countDataOutputs(node)
+      return computeAnyOutputSelectIndexMax(
+        dataCount,
+        nodeHasTrailingEmptyDataOutput(node.outputs, dataCount),
+      )
+    })
     propagatePrimitiveSplitSync(this)
     this.graph?.setDirtyCanvas?.(true, false)
   }

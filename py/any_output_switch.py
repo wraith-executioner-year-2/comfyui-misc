@@ -12,8 +12,9 @@ from comfy_execution.graph import ExecutionBlocker
 
 from .utils import ByPassNamesTuple, ByPassTypeTuple, any_type, get_category, get_name
 
-# 画面上に常に表示しておくデータ出力の最小個数（any_01 の1本 + index）
 MIN_DATA_OUTPUTS = 1
+# web/any_output_switch.js stabilize が最後の接続 data の次に確保する空きスロット数
+_STABILIZE_TRAILING_EMPTY_DATA_SLOTS = 1
 
 
 def _linked_output_slots(prompt, unique_id):
@@ -21,50 +22,48 @@ def _linked_output_slots(prompt, unique_id):
     ワークフロー JSON から、このノード出力に接続されているスロット番号を集める。
 
     ComfyUI の prompt では、各ノード入力が [元ノードID, 元スロット番号] で保存される。
-    そのためこの関数は「元ノードIDが自分と一致するもの」だけを抽出する。
     """
     uid = str(unique_id)
     slots = []
     for node in prompt.values():
         for value in node.get("inputs", {}).values():
             if isinstance(value, list) and len(value) == 2 and str(value[0]) == uid:
-                slots.append(value[1])
+                slots.append(int(value[1]))
     return slots
+
+
+def _pad_num_data_for_stabilize(num_data, max_slot):
+    """index が data スロットに被らないよう、stabilize 分の空き data を num_data に含める。"""
+    return max(num_data, max_slot + _STABILIZE_TRAILING_EMPTY_DATA_SLOTS + 1)
 
 
 def _compute_output_layout(linked_slots, min_data_outputs):
     """
-    データ出力の本数と index 出力のスロット番号を決めます。
+    データ出力の本数と index 出力位置を決める。
 
-    JS 側: [データ 0..N-1], [index at N]
-    返却タプル: result[0..N-1] がデータ、result[N] が int の index
+    返却タプルは result[0..num_data-1] が data、result[num_data] が index (int)。
     """
     if not linked_slots:
         num_data = min_data_outputs
         return [], num_data, num_data
 
-    sorted_slots = sorted(set(linked_slots))
+    sorted_slots = sorted(set(int(s) for s in linked_slots))
     max_slot = sorted_slots[-1]
 
-    # 0..max の連番で接続されている場合:
-    # すべて data とみなし、index はその次のスロットに置く。
+    if len(sorted_slots) == 1 and sorted_slots[0] == min_data_outputs:
+        num_data = min_data_outputs
+        return [], num_data, num_data
+
     contiguous_from_zero = sorted_slots == list(range(max_slot + 1))
     if contiguous_from_zero:
         num_data = max(min_data_outputs, max_slot + 1)
-        index_slot = num_data
-        return sorted_slots, num_data, index_slot
+        data_slots = sorted_slots
+    else:
+        num_data = max(min_data_outputs, max_slot)
+        data_slots = [s for s in sorted_slots if s < num_data]
 
-    # index だけが接続されている典型ケース（min_data_outputs=1 なら slot=1）。
-    if len(sorted_slots) == 1 and sorted_slots[0] == min_data_outputs:
-        num_data = min_data_outputs
-        index_slot = num_data
-        return [], num_data, index_slot
-
-    # ギャップがある場合は、最大スロットを index とみなし、それ未満を data にする。
-    num_data = max(min_data_outputs, max_slot)
-    index_slot = num_data
-    data_slots = [s for s in sorted_slots if s < index_slot]
-    return data_slots, num_data, index_slot
+    num_data = _pad_num_data_for_stabilize(num_data, max_slot)
+    return data_slots, num_data, num_data
 
 
 class MiscAnyOutputSwitch:
@@ -86,7 +85,6 @@ class MiscAnyOutputSwitch:
             },
         }
 
-    # 可変データ出力 + 末尾 index。2 要素目を "INT" 固定にすると増えた出力が誤って INT 扱いになるため * のみ定義
     RETURN_TYPES = ByPassTypeTuple((any_type,))
     RETURN_NAMES = ByPassNamesTuple(("any_01",))
     FUNCTION = "switch"
@@ -95,9 +93,9 @@ class MiscAnyOutputSwitch:
         """
         入力を 1 本だけ有効化して返す。
 
-        - 選ばれたデータ出力には input を流す
-        - それ以外のデータ出力には ExecutionBlocker を返す
-        - 最後尾に index (0 始まり) を返す
+        - 選ばれた data 出力: input
+        - それ以外の data 出力: ExecutionBlocker
+        - 末尾: 選ばれた index (0 始まり)
         """
         linked = (
             _linked_output_slots(prompt, unique_id)
