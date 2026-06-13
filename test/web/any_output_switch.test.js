@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
-import { buildSwitchOutputValues, computeOutputLayout } from "../../js/logic/any-output-switch-layout.js"
-import { computeSelectIndexMax } from "../../js/logic/select-index-bounds.js"
-import { getGraphLink } from "../../js/utils/graph-links.js"
-import { createTrailingOutputHelpers } from "../../js/utils/trailing-output.js"
+import { buildSwitchOutputValues, computeOutputLayout } from "../../web/logic/any-output-switch-layout.js"
+import { computeSelectIndexMax } from "../../web/logic/select-index-bounds.js"
+import { getGraphLink } from "../../web/utils/graph-links.js"
+import { createTrailingOutputHelpers } from "../../web/utils/trailing-output.js"
 
 describe("any_output_switch", () => {
   describe("computeOutputLayout", () => {

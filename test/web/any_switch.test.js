@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
-import { ANY_SWITCH_DATA_OUTPUT_SLOT, getDesiredAnyInputCount } from "../../js/logic/any-switch-inputs.js"
-import { computeSelectIndexMax } from "../../js/logic/select-index-bounds.js"
-import { miscSlotTypesConnect } from "../../js/logic/litegraph-type-compat.js"
-import { countAnySwitchInputs, SELECT_INDEX_KEY } from "../../js/utils/select-index.js"
-import { syncSelectIndexWidget } from "../../js/utils/select-index.js"
-import { PRIMITIVES_DISPLAY_LABEL, PRIMITIVES_TYPE, slotLabelForLinkType } from "../../js/utils/constants.js"
+import { ANY_SWITCH_DATA_OUTPUT_SLOT, getDesiredAnyInputCount } from "../../web/logic/any-switch-inputs.js"
+import { computeSelectIndexMax } from "../../web/logic/select-index-bounds.js"
+import { miscSlotTypesConnect } from "../../web/logic/litegraph-type-compat.js"
+import { countAnySwitchInputs, SELECT_INDEX_KEY } from "../../web/utils/select-index.js"
+import { syncSelectIndexWidget } from "../../web/utils/select-index.js"
+import { PRIMITIVES_DISPLAY_LABEL, PRIMITIVES_TYPE, slotLabelForLinkType } from "../../web/utils/constants.js"
 
 describe("any_switch", () => {
   describe("miscSlotTypesConnect", () => {

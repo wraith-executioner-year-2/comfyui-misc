@@ -31,7 +31,7 @@ alwaysApply: false
 
 ## 新規ノード追加時
 
-1. `*_primitives.py` または専用モジュールに `Misc*` クラス
+1. `py/*_primitives.py` または `py/` 内の専用モジュールに `Misc*` クラス
 2. `NODE_CLASS_MAPPINGS` / `NODE_DISPLAY_NAME_MAPPINGS`
-3. `__init__.py` でマージ
-4. 対応する `js/*.js` と `test/js/` 内の同階層の `*.test.js`（`testing.mdc` 参照）
+3. ルート `__init__.py` でマージ
+4. 対応する `web/*.js` と `test/web/` 内の同階層の `*.test.js`（`testing.mdc` 参照）

@@ -3,7 +3,7 @@ import {
   getStoredPrimitiveSlotTypes,
   pickResolvedPrimitiveSlotType,
   storePrimitiveSlotTypes,
-} from "../../js/utils/primitive-type.js"
+} from "../../web/utils/primitive-type.js"
 import {
   MISC_PRIMITIVE_SLOT_TYPES_KEY,
   PRIMITIVE_SLOT_TYPE,
@@ -11,10 +11,10 @@ import {
   PRIMITIVES_TYPE,
   isPrimitivesLinkType,
   slotLabelForLinkType,
-} from "../../js/utils/constants.js"
-import { getDataOutputNamePrefix } from "../../js/utils/naming.js"
-import { syncPrimitivesLinkSlot } from "../../js/utils/constants.js"
-import { listLinkedPrimitiveInputs } from "../../js/logic/split-primitives-names.js"
+} from "../../web/utils/constants.js"
+import { getDataOutputNamePrefix } from "../../web/utils/naming.js"
+import { syncPrimitivesLinkSlot } from "../../web/utils/constants.js"
+import { listLinkedPrimitiveInputs } from "../../web/logic/split-primitives-names.js"
 
 describe("combine_primitives", () => {
   describe("PRIMITIVES_TYPE（ノード検索の型フィルタ）", () => {

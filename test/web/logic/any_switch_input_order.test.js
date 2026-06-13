@@ -3,8 +3,8 @@ import {
   isAnySwitchPasteOrderMismatch,
   remapPastedLinksToNamedInputs,
   remapSerializedTargetSlotToInputIndex,
-} from "../../../js/logic/any-switch-input-order.js"
-import { remapInputTargetSlot } from "../../../js/logic/input-slot-remap.js"
+} from "../../../web/logic/any-switch-input-order.js"
+import { remapInputTargetSlot } from "../../../web/logic/input-slot-remap.js"
 
 describe("any_switch input order", () => {
   describe("remapInputTargetSlot", () => {

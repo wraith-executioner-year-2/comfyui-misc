@@ -4,10 +4,10 @@ import {
   listLinkedPrimitiveInputs,
   resolveDesiredPrimitiveSlots,
   typeNameForPrimitiveSlotType,
-} from "../../js/logic/split-primitives-names.js"
-import { getGraphLink } from "../../js/utils/graph-links.js"
-import { primitiveTypesCompatible, reconcilePrimitiveSlotType } from "../../js/utils/primitive-type.js"
-import { PRIMITIVE_SLOT_TYPE } from "../../js/utils/constants.js"
+} from "../../web/logic/split-primitives-names.js"
+import { getGraphLink } from "../../web/utils/graph-links.js"
+import { primitiveTypesCompatible, reconcilePrimitiveSlotType } from "../../web/utils/primitive-type.js"
+import { PRIMITIVE_SLOT_TYPE } from "../../web/utils/constants.js"
 
 describe("split_primitives", () => {
   describe("formatTypedOutputName", () => {

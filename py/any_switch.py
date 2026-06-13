@@ -7,7 +7,7 @@ Any Switch (misc)
 rgthree の Any Switch をベースに、インデックス出力を追加したノードです。
 """
 
-from .utils import FlexibleOptionalInputType, any_type, get_category, get_name, is_context_empty
+from ..utils import FlexibleOptionalInputType, any_type, get_category, get_name, is_context_empty
 
 # ノード検索の型フィルタ（LATENT 等）が optional の宣言を参照するため、初期スロットを登録する
 # 初期表示は any_01 の1本（接続に応じて any_02 … が増える）

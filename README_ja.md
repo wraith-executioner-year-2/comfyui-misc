@@ -126,7 +126,7 @@
 
 ## 補足
 
-- 動的スロットは `js/` の拡張で同期します（`attachStabilizeHooks` / `stabilize`）。
+- 動的スロットは `web/` の拡張で同期します（`attachStabilizeHooks` / `stabilize`）。
 - 読込・コピペ直後はリンク復元完了までスロット削除を抑え、復元後に `stabilize()` で整理します。
 - バージョン履歴は [CHANGELOG.md](CHANGELOG.md) を参照してください。
 
@@ -138,5 +138,5 @@ npm test      # 単体テスト（ComfyUI 不要）
 npm run format  # Prettier（JS のみ、trailing comma なし）
 ```
 
-- テスト: `test/js/` は `js/` と同じ階層（例: `test/js/utils/graph_context.test.js`）
-- コピペ復元の横断テスト: `test/js/logic/paste_restore.test.js`
+- テスト: `test/web/` は `web/` と同じ階層（例: `test/web/utils/graph_context.test.js`）
+- コピペ復元の横断テスト: `test/web/logic/paste_restore.test.js`

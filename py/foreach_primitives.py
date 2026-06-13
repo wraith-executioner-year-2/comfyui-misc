@@ -7,7 +7,7 @@ ComfyUI の OUTPUT_IS_LIST / INPUT_IS_LIST によるリスト実行を利用す�
 
 from comfy_execution.graph import ExecutionBlocker
 
-from .utils import (
+from ..utils import (
     any_type,
     combined_primitives_type,
     get_category,

@@ -1,6 +1,6 @@
 ---
 description: JS 拡張・動的スロット・コピペ復元・ノードサイズ
-globs: "js/**"
+globs: "web/**"
 alwaysApply: false
 ---
 
@@ -27,7 +27,7 @@ app.registerExtension({
 - **`scheduleStabilizeRetries`**: 読込・コピペ直後のリンク復元揺れを吸収
 - **`onConfigure`**: ワークフロー読込・コピペ直後に `_misc*RestoringUntil = Date.now() + MISC_GRAPH_RESTORE_WINDOW_MS`（2500ms）
 - **コピペ中**: リンク未復元のスロットを `removeOutput` / `removeInput` しない（Split / Any Output Switch 等）
-- **Split 出力増減後**: `syncNodeSizeToContent(node)`（`js/utils/node-layout.js`）で `computeSize` に合わせる
+- **Split 出力増減後**: `syncNodeSizeToContent(node)`（`web/utils/node-layout.js`）で `computeSize` に合わせる
 - **PRIMITIVES 表示**: `syncPrimitivesLinkSlot`、ラベルは `combined`
 - **グラフ走査**: `findLinkedCombineNode` / `propagatePrimitiveSplitSync` — Reroute・Any Switch・**ForEach/End ForEach** もパイプラインとして辿る
 

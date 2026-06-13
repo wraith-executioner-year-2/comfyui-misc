@@ -21,7 +21,7 @@ function resolveComfyUiApp() {
 export default defineConfig({
   plugins: [resolveComfyUiApp()],
   test: {
-    include: ["test/js/**/*.test.js"],
+    include: ["test/web/**/*.test.js"],
     environment: "node",
     pool: "threads",
     fileParallelism: true,

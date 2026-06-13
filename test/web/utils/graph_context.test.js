@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { getNodeGraph } from "../../../js/utils/graph-context.js"
+import { getNodeGraph } from "../../../web/utils/graph-context.js"
 
 describe("graph_context", () => {
   describe("getNodeGraph", () => {

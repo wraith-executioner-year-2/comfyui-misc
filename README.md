@@ -126,7 +126,7 @@ Collects per-iteration results from the loop body into `combined` again.
 
 ## Notes
 
-- Dynamic slots are synchronized in `js/` (`attachStabilizeHooks` / `stabilize`).
+- Dynamic slots are synchronized in `web/` (`attachStabilizeHooks` / `stabilize`).
 - After load or copy-paste, slot removal is suppressed until links restore, then `stabilize()` trims unused sockets.
 - See [CHANGELOG.md](CHANGELOG.md) for version history.
 
@@ -138,5 +138,5 @@ npm test        # unit tests (no ComfyUI)
 npm run format  # Prettier (JS only, no trailing commas)
 ```
 
-- Tests: `test/js/` mirrors `js/` layout (e.g. `test/js/utils/graph_context.test.js`)
-- Copy-paste restore: `test/js/logic/paste_restore.test.js`
+- Tests: `test/web/` mirrors `web/` layout (e.g. `test/web/utils/graph_context.test.js`)
+- Copy-paste restore: `test/web/logic/paste_restore.test.js`

@@ -1,14 +1,14 @@
-"""comfyui-misc — ComfyUI カスタムノード（misc カテゴリ）と js/ フロントエンド拡張。"""
-from .any_output_switch import NODE_CLASS_MAPPINGS as ANY_OUTPUT_SWITCH_MAPPINGS
-from .any_output_switch import NODE_DISPLAY_NAME_MAPPINGS as ANY_OUTPUT_SWITCH_DISPLAY
-from .any_switch import NODE_CLASS_MAPPINGS as ANY_SWITCH_MAPPINGS
-from .any_switch import NODE_DISPLAY_NAME_MAPPINGS as ANY_SWITCH_DISPLAY
-from .combine_primitives import NODE_CLASS_MAPPINGS as COMBINE_PRIMITIVES_MAPPINGS
-from .combine_primitives import NODE_DISPLAY_NAME_MAPPINGS as COMBINE_PRIMITIVES_DISPLAY
-from .foreach_primitives import NODE_CLASS_MAPPINGS as FOREACH_PRIMITIVES_MAPPINGS
-from .foreach_primitives import NODE_DISPLAY_NAME_MAPPINGS as FOREACH_PRIMITIVES_DISPLAY
-from .split_primitives import NODE_CLASS_MAPPINGS as SPLIT_PRIMITIVES_MAPPINGS
-from .split_primitives import NODE_DISPLAY_NAME_MAPPINGS as SPLIT_PRIMITIVES_DISPLAY
+"""comfyui-misc — ComfyUI カスタムノード（misc カテゴリ）と web/ フロントエンド拡張。"""
+from .py.any_output_switch import NODE_CLASS_MAPPINGS as ANY_OUTPUT_SWITCH_MAPPINGS
+from .py.any_output_switch import NODE_DISPLAY_NAME_MAPPINGS as ANY_OUTPUT_SWITCH_DISPLAY
+from .py.any_switch import NODE_CLASS_MAPPINGS as ANY_SWITCH_MAPPINGS
+from .py.any_switch import NODE_DISPLAY_NAME_MAPPINGS as ANY_SWITCH_DISPLAY
+from .py.combine_primitives import NODE_CLASS_MAPPINGS as COMBINE_PRIMITIVES_MAPPINGS
+from .py.combine_primitives import NODE_DISPLAY_NAME_MAPPINGS as COMBINE_PRIMITIVES_DISPLAY
+from .py.foreach_primitives import NODE_CLASS_MAPPINGS as FOREACH_PRIMITIVES_MAPPINGS
+from .py.foreach_primitives import NODE_DISPLAY_NAME_MAPPINGS as FOREACH_PRIMITIVES_DISPLAY
+from .py.split_primitives import NODE_CLASS_MAPPINGS as SPLIT_PRIMITIVES_MAPPINGS
+from .py.split_primitives import NODE_DISPLAY_NAME_MAPPINGS as SPLIT_PRIMITIVES_DISPLAY
 
 NODE_CLASS_MAPPINGS = {
     **ANY_SWITCH_MAPPINGS,
@@ -26,6 +26,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     **SPLIT_PRIMITIVES_DISPLAY,
 }
 
-WEB_DIRECTORY = "./js"
+WEB_DIRECTORY = "./web"
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "WEB_DIRECTORY"]

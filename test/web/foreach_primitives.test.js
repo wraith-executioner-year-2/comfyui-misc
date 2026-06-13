@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { packCombinedPrimitives, unpackCombinedPrimitives } from "../../js/logic/primitives-data.js"
+import { packCombinedPrimitives, unpackCombinedPrimitives } from "../../web/logic/primitives-data.js"
 
 describe("foreach_primitives", () => {
   describe("pack / unpack (Python 同等)", () => {
