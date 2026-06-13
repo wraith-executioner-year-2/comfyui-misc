@@ -120,7 +120,12 @@
 
 ## インストール
 
-1. このフォルダを `ComfyUI/custom_nodes/comfyui-misc` に配置します。
+1. `ComfyUI/custom_nodes` で次を実行します:
+
+   ```bash
+   git clone https://github.com/wraith-executioner-year-2/comfyui-misc/
+   ```
+
 2. ComfyUI を再起動します。
 3. ノードカテゴリは `misc` です。
 

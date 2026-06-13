@@ -120,7 +120,12 @@ Collects per-iteration results from the loop body into `combined` again.
 
 ## Installation
 
-1. Place this folder under `ComfyUI/custom_nodes/comfyui-misc`.
+1. From `ComfyUI/custom_nodes`:
+
+   ```bash
+   git clone https://github.com/wraith-executioner-year-2/comfyui-misc/
+   ```
+
 2. Restart ComfyUI.
 3. Node category: `misc`.
 
