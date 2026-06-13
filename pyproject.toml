@@ -1,6 +1,6 @@
 [project]
 name = "comfyui-misc"
-version = "0.1.0"
+version = "0.1.1"
 description = "Utility switch and primitive packing nodes for ComfyUI."
 readme = "README.md"
 requires-python = ">=3.9"
