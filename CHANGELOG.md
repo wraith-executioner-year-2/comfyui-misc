@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.1.1
+
+- [`77d3a00`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/77d3a00) — :bug: Any Output Switch で3本目 data 出力に index が流れる不具合を修正
+  - Python の `num_data` を stabilize の空き data スロット分まで確保し、Preview Image 等で `index` 整数が渡らないようにした
+  - `select_index` 上限を末尾空スロットの有無で切り替え、3 本すべて接続時は index 2 まで選択可能
+- [`4818514`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/4818514) — :wrench: ノード Python を `py/` へ、フロントエンドを `web/` に再構成
+  - `utils/` を `py/utils/` へ移動し、テストを `test/web/` に `web/` と同じ階層で整理
+- [`c641d63`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/c641d63) — :memo: README のインストール手順を `git clone` に変更
+- [`a292597`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/a292597) — :wrench: `.editorconfig` 削除と `package-lock.json` を Git 管理外に
+
 ## v0.1.0
 
 - [`eb7bcaa`](https://github.com/wraith-executioner-year-2/comfyui-misc/commit/eb7bcaa) — :sparkles: ForEach / End ForEach と stabilize 共通化・Prettier 導入
