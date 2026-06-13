@@ -11,7 +11,7 @@ alwaysApply: false
 - 表示名・クラスキー: `get_name("Any Switch")` → `"Any Switch (misc)"`
 - カテゴリ: `get_category()` → `"misc"`
 
-## 型（`utils/comfy_types.py`）
+## 型（`py/utils/comfy_types.py`）
 
 - 任意接続: `any_type` (`AnyType("*")`)
 - Combine↔Split 専用: `combined_primitives_type`（表示・リンク型は `PRIMITIVES`、エイリアス `combined` 互換）

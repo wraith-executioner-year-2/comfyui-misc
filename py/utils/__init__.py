@@ -1,7 +1,7 @@
 """
 comfyui-misc 共通ユーティリティ（パッケージ入口）
 
-後方互換のため ``from .utils import …`` はこのモジュールへ集約されます。
+後方互換のため ``from .utils import …`` はこのモジュールへ集約されます（`py/` 内のノードから利用）。
 """
 
 from .comfy_types import (

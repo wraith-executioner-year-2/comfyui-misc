@@ -10,7 +10,7 @@ Any Output Switch (misc)
 
 from comfy_execution.graph import ExecutionBlocker
 
-from ..utils import ByPassNamesTuple, ByPassTypeTuple, any_type, get_category, get_name
+from .utils import ByPassNamesTuple, ByPassTypeTuple, any_type, get_category, get_name
 
 # 画面上に常に表示しておくデータ出力の最小個数（any_01 の1本 + index）
 MIN_DATA_OUTPUTS = 1

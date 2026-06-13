@@ -5,7 +5,7 @@ Combine Primitives (misc)
 1 つの combined オブジェクトにまとめ、入力数を length で出力します。
 """
 
-from ..utils import (
+from .utils import (
     FlexibleOptionalInputType,
     _PRIMITIVE_TYPE_NAMES,
     combined_primitives_type,

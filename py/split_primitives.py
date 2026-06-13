@@ -5,7 +5,7 @@ Combine Primitives の combined 出力だけを受け取り、
 結合時と同じ本数・型の Primitive 出力に戻します。末尾に length（INT）を付けます。
 """
 
-from ..utils import (
+from .utils import (
     ByPassTypeTuple,
     SplitReturnTypes,
     combined_primitives_type,
